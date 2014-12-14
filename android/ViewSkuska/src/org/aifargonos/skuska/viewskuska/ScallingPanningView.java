@@ -144,61 +144,6 @@ public class ScallingPanningView extends ViewGroup {
 		super.onSizeChanged(w, h, oldw, oldh);
 
 		fixContentRect();
-		
-		/* TODO .: change the size of contentRect !!!
-		 * 	This view must always be contained in contentRect.
-		 * 	So if is not,
-		 * 		first move the contentRect and
-		 * 		then enlarge it, but keep the aspect ratio.
-		 * TODO [containment] .: actually, it should be possible to see the whole contentRect at once .!
-		 * TODO [containment] .: Bug: When the content is all the way to the right and I stretch the view vertically, it jumps left .!
-		 */
-		
-		// TODO [layout] .: if there are no children, do nothing, because the contentRect size is 0!
-		
-//		boolean mayNeedToEnlarge = false;
-//		
-//		// If contentRect is too small or displaced, first move it.
-//		if(!isLeftRightValid(contentRect.left, contentRect.right)) {
-//			final float newLeft = Math.min(getPaddingLeft(),
-//					getWidth() - getPaddingRight() - contentRect.width());
-//			contentRect.right = newLeft + contentRect.width();
-//			contentRect.left = newLeft;
-//			mayNeedToEnlarge = true;
-//		}
-//		if(!isTopBottomValid(contentRect.top, contentRect.bottom)) {
-//			final float newTop = Math.min(getPaddingTop(),
-//					getHeight() - getPaddingBottom() - contentRect.height());
-//			contentRect.bottom = newTop + contentRect.height();
-//			contentRect.top = newTop;
-//			mayNeedToEnlarge = true;
-//		}
-//		
-//		// If it is not enough, also scale keeping the aspect ratio.
-//		if(mayNeedToEnlarge && !isRectValid(contentRect)) {
-//			
-//			int widthWithPadding = getWidth() - getPaddingLeft() - getPaddingRight();
-//			int heightWithPadding = getHeight() - getPaddingTop() - getPaddingBottom();
-//			
-//			float xDiff = widthWithPadding - contentRect.width();
-//			float yDiff = heightWithPadding - contentRect.height();
-//			
-//			final float ratio;
-//			if(xDiff > yDiff) {
-//				// Enlarge in ratio between widths.
-//				ratio = widthWithPadding / contentRect.width();
-//			} else {
-//				// Enlarge in ratio between heights.
-//				ratio = heightWithPadding / contentRect.height();
-//			}
-//			
-//			contentRect.left *= ratio;
-//			contentRect.top *= ratio;
-//			contentRect.right *= ratio;
-//			contentRect.bottom *= ratio;
-//			
-//		}
-		
 	}
 	
 	
@@ -272,19 +217,10 @@ public class ScallingPanningView extends ViewGroup {
 	private final ScaleGestureDetector.OnScaleGestureListener scaleGestureListener =
 			new ScaleGestureDetector.SimpleOnScaleGestureListener() {
 		
-		private float lastSpan;
-		
-		@Override
-		public boolean onScaleBegin(ScaleGestureDetector detector) {
-			lastSpan = detector.getCurrentSpan();
-			return true;
-		}
-		
 		@Override
 		public boolean onScale(ScaleGestureDetector detector) {
 			
-			float ratio = detector.getCurrentSpan() / lastSpan;
-//			float ratio = detector.getCurrentSpan() / detector.getPreviousSpan();
+			float ratio = detector.getCurrentSpan() / detector.getPreviousSpan();
 			
 			final float focusX = detector.getFocusX();
 			final float focusY = detector.getFocusY();
@@ -293,43 +229,9 @@ public class ScallingPanningView extends ViewGroup {
 			
 			fixContentRect();
 			
-//			/* 
-//			 * Translate origin of coordinate system of contentRect to the focus,
-//			 * scale it, and translate it back.
-//			 */
-//			float newLeft = ((contentRect.left - focusX) * ratio) + focusX;
-//			if(!isLeftValid(newLeft)) {
-//				newLeft = getPaddingLeft();
-//				ratio = (newLeft - focusX) / (contentRect.left - focusX);
-//			}
-//			float newTop = ((contentRect.top - focusY) * ratio) + focusY;
-//			if(!isTopValid(newTop)) {
-//				newTop = getPaddingTop();
-//				ratio = (newTop - focusY) / (contentRect.top - focusY);
-//				newLeft = ((contentRect.left - focusX) * ratio) + focusX;
-//			}
-//			float newRight = ((contentRect.right - focusX) * ratio) + focusX;
-//			if(!isRightValid(newRight)) {
-//				newRight = getWidth() - getPaddingRight();
-//				ratio = (newRight - focusX) / (contentRect.right - focusX);
-//				newLeft = ((contentRect.left - focusX) * ratio) + focusX;
-//				newTop = ((contentRect.top - focusY) * ratio) + focusY;
-//			}
-//			float newBottom = ((contentRect.bottom - focusY) * ratio) + focusY;
-//			if(!isBottomValid(newBottom)) {
-//				newBottom = getHeight() - getPaddingBottom();
-//				ratio = (newBottom - focusY) / (contentRect.bottom - focusY);
-//				newLeft = ((contentRect.left - focusX) * ratio) + focusX;
-//				newTop = ((contentRect.top - focusY) * ratio) + focusY;
-//				newRight = ((contentRect.right - focusX) * ratio) + focusX;
-//			}
-//			
-//			// TODO [scaling] .: I should move the contentRect if just something is not satisfied. !! This does not really work !!! :-P
-//			contentRect.set(newLeft, newTop, newRight, newBottom);
 			ViewCompat.postInvalidateOnAnimation(ScallingPanningView.this);
 			requestLayout();
 			
-			lastSpan = detector.getCurrentSpan();
 			return true;
 		}
 		
@@ -337,8 +239,19 @@ public class ScallingPanningView extends ViewGroup {
 	
 	
 	
+	/**
+	 * TODO ...<pre>
+	 * If contentRect is too small, adapt it.
+	 * 	- If only one side of contentRect is inside this view and contentRect is big enough to contain the view,
+	 * 		move contentRect so that the side is at the edge of the view.
+	 * 	- If a dimension of contentRect is too small to contain this view,
+	 * 		center the contentRect into the middle of the view along this dimension.
+	 * 	- If both dimensions of contentRect are too small,
+	 * 		scale up the contentRect so that some dimension fits exactly into the view and the other is smaller.
+	 * </pre>
+	 */
 	private void fixContentRect() {// TODO .: rename this !!!
-		/* TODO .: If contentRect is too small, adapt it.
+		/* If contentRect is too small, adapt it.
 		 * 	- If only one side of contentRect is inside this view and contentRect is big enough to contain the view,
 		 * 		move contentRect so that the side is at the edge of the view.
 		 * 	- If a dimension of contentRect is too small to contain this view,
