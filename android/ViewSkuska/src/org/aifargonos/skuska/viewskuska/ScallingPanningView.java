@@ -10,7 +10,11 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.MeasureSpec;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
 
 
 
@@ -48,12 +52,16 @@ public class ScallingPanningView extends ViewGroup {
 	public ScallingPanningView(Context context, AttributeSet attrs, int defStyleAttr) {
 //		this(context, attrs, defStyleAttr, 0);
 		super(context, attrs, defStyleAttr);
+//		
+//		linePaint.setStrokeWidth(0);
+//		linePaint.setStyle(Paint.Style.STROKE);
+//		
+//		textPaint.setARGB(255, 0, 0, 0);
+//		textPaint.setAntiAlias(true);
 		
-		linePaint.setStrokeWidth(0);
-		linePaint.setStyle(Paint.Style.STROKE);
-		
-		textPaint.setARGB(255, 0, 0, 0);
-		textPaint.setAntiAlias(true);
+		borderPaint.setStrokeWidth(0);
+		borderPaint.setStyle(Paint.Style.STROKE);
+		borderPaint.setARGB(255, 0, 0, 255);
 		
 		setWillNotDraw(false);
 		
@@ -67,50 +75,109 @@ public class ScallingPanningView extends ViewGroup {
 	
 	
 	
-	// TODO [layout] .: Extend contentRect when a child is added!
+	@Override
+	public void addView(View child, int index, LayoutParams params) {
+		// TODO [layout] .: Delegate to a Layout
+//		removeAllViews();
+		removeAllViewsInLayout();
+		super.addView(child, index, params);
+		/* TODO [layout] .: Extend contentRect when a child is added!
+		 * 	ask the child what size it wants to be
+		 * 	set contentRect to that size ;-)
+		 */
+		resetContentRectAccordingToChild(child);
+	}
 	
+	@Override
+	protected boolean addViewInLayout(View child, int index, LayoutParams params, boolean preventRequestLayout) {
+		// TODO [layout] .: Delegate to a Layout
+//		removeAllViews();
+		removeAllViewsInLayout();
+		boolean ret = super.addViewInLayout(child, index, params, preventRequestLayout);
+		/* TODO [layout] .: Extend contentRect when a child is added!
+		 * 	ask the child what size it wants to be
+		 * 	set contentRect to that size ;-)
+		 */
+		resetContentRectAccordingToChild(child);
+		return ret;
+	}
 	
-	
-	// TODO [layout] .: Remove these after there can be some components inside.
-	private Paint linePaint = new Paint();
-	private Paint textPaint = new Paint();
+	private void resetContentRectAccordingToChild(final View child) {
+		final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
+		child.measure(
+				MeasureSpec.makeMeasureSpec(
+						Math.max(0, (int)Math.floor(contentRect.width() - lp.leftMargin - lp.rightMargin)),
+						MeasureSpec.UNSPECIFIED),
+				MeasureSpec.makeMeasureSpec(
+						Math.max(0, (int)Math.floor(contentRect.height() - lp.topMargin - lp.bottomMargin)),
+						MeasureSpec.UNSPECIFIED));
+		contentRect.set(0, 0,
+				child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin,
+				child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
+	}
+//	
+//	
+//	
+//	// TODO [layout] .: Remove these after there can be some components inside.
+//	private Paint linePaint = new Paint();
+//	private Paint textPaint = new Paint();
+	private Paint borderPaint = new Paint();
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		
-		linePaint.setStrokeWidth(contentRect.height() / 10);
-		
-		linePaint.setARGB(255, 0, 255, 0);
-		canvas.drawLine(
-				contentRect.left, (contentRect.top + contentRect.bottom) / 2,
-				contentRect.right, (contentRect.top + contentRect.bottom) / 2,
-				linePaint);
-		
-		linePaint.setARGB(255, 0, 0, 255);
-		canvas.drawLine(
-				(contentRect.left + contentRect.right) / 2, contentRect.top,
-				(contentRect.left + contentRect.right) / 2, contentRect.bottom,
-				linePaint);
-		
-		linePaint.setARGB(255, 255, 0, 0);
-		canvas.drawLine(
+//		
+//		linePaint.setStrokeWidth(contentRect.height() / 10);
+//		
+//		linePaint.setARGB(255, 0, 255, 0);
+//		canvas.drawLine(
+//				contentRect.left, (contentRect.top + contentRect.bottom) / 2,
+//				contentRect.right, (contentRect.top + contentRect.bottom) / 2,
+//				linePaint);
+//		
+//		linePaint.setARGB(255, 0, 0, 255);
+//		canvas.drawLine(
+//				(contentRect.left + contentRect.right) / 2, contentRect.top,
+//				(contentRect.left + contentRect.right) / 2, contentRect.bottom,
+//				linePaint);
+//		
+//		linePaint.setARGB(255, 255, 0, 0);
+//		canvas.drawLine(
+//				contentRect.left, contentRect.top,
+//				contentRect.right, contentRect.bottom,
+//				linePaint);
+//		
+//		
+//		textPaint.setTextSize(contentRect.height() / 3);
+//		
+//		canvas.drawText("text",
+//				contentRect.left, (contentRect.top + contentRect.bottom) / 2,
+//				textPaint);
+//		
+		canvas.drawRect(
 				contentRect.left, contentRect.top,
 				contentRect.right, contentRect.bottom,
-				linePaint);
-		
-		
-		textPaint.setTextSize(contentRect.height() / 3);
-		
-		canvas.drawText("text",
-				contentRect.left, (contentRect.top + contentRect.bottom) / 2,
-				textPaint);
+				borderPaint);
 	}
 	
 	
 	
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		
+		// Measure the child
+		View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
+		if(child != null && child.getVisibility() != GONE) {
+			final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
+			child.measure(
+					MeasureSpec.makeMeasureSpec(
+							Math.max(0, (int)Math.floor(contentRect.width() - lp.leftMargin - lp.rightMargin)),
+							MeasureSpec.EXACTLY),
+					MeasureSpec.makeMeasureSpec(
+							Math.max(0, (int)Math.floor(contentRect.height() - lp.topMargin - lp.bottomMargin)),
+							MeasureSpec.EXACTLY));
+		}
+		
 		/* TODO .: What size do I want to be?
 		 * 	How about the size of my contentRect?
 		 */
@@ -135,6 +202,42 @@ public class ScallingPanningView extends ViewGroup {
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		// TODO [layout] .: Lay out the children into the contentRect!
 		
+		View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
+		if(child != null && child.getVisibility() != GONE) {
+			final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !!!
+			final int left = (int)Math.ceil(contentRect.left + lp.leftMargin);
+			final int top = (int)Math.ceil(contentRect.top + lp.topMargin);
+			final int width = child.getMeasuredWidth();
+			final int height = child.getMeasuredHeight();
+			child.layout(
+					left,
+					top,
+					left + width,
+					top + height);
+		}
+		
+	}
+    
+	
+	
+	@Override
+	protected LayoutParams generateDefaultLayoutParams() {
+        return new MarginLayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+    }
+	
+	@Override
+	public LayoutParams generateLayoutParams(AttributeSet attrs) {
+		return new MarginLayoutParams(getContext(), attrs);
+	}
+	
+	@Override
+	protected LayoutParams generateLayoutParams(LayoutParams p) {
+		return new MarginLayoutParams(p);
+	}
+	
+	@Override
+	protected boolean checkLayoutParams(LayoutParams p) {
+		return p != null && p instanceof MarginLayoutParams;
 	}
 	
 	

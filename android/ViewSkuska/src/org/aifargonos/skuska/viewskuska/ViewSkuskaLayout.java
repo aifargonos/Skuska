@@ -94,8 +94,6 @@ public class ViewSkuskaLayout extends ViewGroup {
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		
-		getPaddingLeft();
-		
 		// I want to keep the size and position of contentRect
 		int measuredWidth = contentRect.right + theGap + 1 + getPaddingRight();
 		int measuredHeight = contentRect.bottom + theGap + 1 + getPaddingBottom();
