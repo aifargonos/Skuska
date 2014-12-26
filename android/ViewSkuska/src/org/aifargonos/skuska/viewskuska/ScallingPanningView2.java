@@ -3,6 +3,7 @@ package org.aifargonos.skuska.viewskuska;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
@@ -18,7 +19,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 
 
 
-public class ScallingPanningView extends ViewGroup {
+public class ScallingPanningView2 extends ViewGroup {
 	
 	
 	
@@ -55,23 +56,52 @@ public class ScallingPanningView extends ViewGroup {
 	 * <p>
 	 * It must be in floats in order to prevent truncation errors.
 	 */
-//	private RectF contentRect = new RectF(0, 0, 0, 0);
-	private RectF contentRect = new RectF(0, 0, 3, 4);// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
+	private RectF contentRect = new RectF();
+	/**
+	 * These two replace the <code>contentRect</code>, so that
+	 * left and top is always 0.
+	 */
+	private int virtualWidth = 3;// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
+	private int virtualHeight = 4;
+	
+	/**
+	 * Translates internal variables into logical contentRect.
+	 * 
+	 * @param rect The rectangle that is adapted to contain the logical contentRect.
+	 */
+	private void getContentRect(RectF rect) {
+		rect.set(
+				-getScrollX(),
+				-getScrollY(),
+				-getScrollX() + virtualWidth - getPaddingLeft() - getPaddingRight(),
+				-getScrollY() + virtualHeight - getPaddingTop() - getPaddingBottom());
+	}
+	
+	/**
+	 * Sets internal variables according to <code>rect</code>.
+	 * 
+	 * @param rect
+	 */
+	private void setContentRect(RectF rect) {
+		virtualWidth = (int)(rect.width() + getPaddingLeft() + getPaddingRight() + 0.5f);
+		virtualHeight = (int)(rect.height() + getPaddingTop() + getPaddingBottom() + 0.5f);
+		scrollTo(-(int)(rect.left + 0.5f), -(int)(rect.top + 0.5f));
+	}
 	
 	private final GestureDetectorCompat gestureDetector;
 	private ScaleGestureDetector scaleGestureDetector;
 	
 	
 	
-	public ScallingPanningView(Context context) {
+	public ScallingPanningView2(Context context) {
 		this(context, null);
 	}
 	
-	public ScallingPanningView(Context context, AttributeSet attrs) {
+	public ScallingPanningView2(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
 	
-	public ScallingPanningView(Context context, AttributeSet attrs, int defStyleAttr) {
+	public ScallingPanningView2(Context context, AttributeSet attrs, int defStyleAttr) {
 //		this(context, attrs, defStyleAttr, 0);
 		super(context, attrs, defStyleAttr);
 //		
@@ -127,15 +157,14 @@ public class ScallingPanningView extends ViewGroup {
 	private void resetContentRectAccordingToChild(final View child) {
 		final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
 		child.measure(
-				MeasureSpec.makeMeasureSpec(
-						Math.max(0, (int)Math.floor(contentRect.width() - lp.leftMargin - lp.rightMargin)),
-						MeasureSpec.UNSPECIFIED),
-				MeasureSpec.makeMeasureSpec(
-						Math.max(0, (int)Math.floor(contentRect.height() - lp.topMargin - lp.bottomMargin)),
-						MeasureSpec.UNSPECIFIED));
-		contentRect.set(0, 0,
-				child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin,
-				child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
+				MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
+				MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+		virtualWidth = child.getMeasuredWidth()
+				+ getPaddingLeft() + getPaddingRight()
+				+ lp.leftMargin + lp.rightMargin;
+		virtualHeight = child.getMeasuredHeight()
+				+ getPaddingTop() + getPaddingBottom()
+				+ lp.topMargin + lp.bottomMargin;
 	}
 //	
 //	
@@ -177,8 +206,8 @@ public class ScallingPanningView extends ViewGroup {
 //				textPaint);
 //		
 		canvas.drawRect(
-				contentRect.left, contentRect.top,
-				contentRect.right, contentRect.bottom,
+				getPaddingLeft(), getPaddingTop(),
+				virtualWidth + getPaddingRight(), virtualHeight + getPaddingBottom(),
 				borderPaint);
 	}
 	
@@ -188,29 +217,28 @@ public class ScallingPanningView extends ViewGroup {
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		
 		// Measure the child
-		View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
-		if(child != null && child.getVisibility() != GONE) {
-			final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
-			child.measure(
-					MeasureSpec.makeMeasureSpec(
-							Math.max(0, (int)Math.floor(contentRect.width() - lp.leftMargin - lp.rightMargin)),
-							MeasureSpec.EXACTLY),
-					MeasureSpec.makeMeasureSpec(
-							Math.max(0, (int)Math.floor(contentRect.height() - lp.topMargin - lp.bottomMargin)),
-							MeasureSpec.EXACTLY));
+		if(getChildCount() > 0) {
+			final View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
+			if(child.getVisibility() != GONE) {
+				final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
+				child.measure(
+						MeasureSpec.makeMeasureSpec(
+								Math.max(0, virtualWidth
+										- getPaddingLeft() - getPaddingRight()
+										- lp.leftMargin - lp.rightMargin),
+								MeasureSpec.EXACTLY),
+						MeasureSpec.makeMeasureSpec(
+								Math.max(0, virtualHeight
+										- getPaddingTop() - getPaddingBottom()
+										- lp.topMargin - lp.bottomMargin),
+								MeasureSpec.EXACTLY));
+			}
 		}
 		
-		/* TODO .: What size do I want to be?
-		 * 	How about the size of my contentRect?
-		 */
-		
-		// I want to fit the whole contentRect in me.
-		final int wannabeWidth = (int)Math.ceil(getPaddingLeft() + contentRect.width() + getPaddingRight());
-		final int wannabeHeight = (int)Math.ceil(getPaddingTop() + contentRect.height() + getPaddingBottom());
-		
+		// I want to be my virtual size.
 		// Apply the restrictions from parent.
-		final int resolvedWidth = resolveSize(wannabeWidth, widthMeasureSpec);
-		final int resolvedHeight = resolveSize(wannabeHeight, heightMeasureSpec);
+		final int resolvedWidth = resolveSize(virtualWidth, widthMeasureSpec);
+		final int resolvedHeight = resolveSize(virtualHeight, heightMeasureSpec);
 		
 		// I should be of the resolved size, but at least the minimal size.
 		setMeasuredDimension(
@@ -222,20 +250,21 @@ public class ScallingPanningView extends ViewGroup {
 	
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		// TODO [layout] .: Lay out the children into the contentRect!
 		
-		View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
-		if(child != null && child.getVisibility() != GONE) {
-			final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !!!
-			final int left = (int)Math.ceil(contentRect.left + lp.leftMargin);
-			final int top = (int)Math.ceil(contentRect.top + lp.topMargin);
-			final int width = child.getMeasuredWidth();
-			final int height = child.getMeasuredHeight();
-			child.layout(
-					left,
-					top,
-					left + width,
-					top + height);
+		if(getChildCount() > 0) {
+			final View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
+			if(child.getVisibility() != GONE) {
+				final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !!!
+				final int left = getPaddingLeft() + lp.leftMargin;
+				final int top = getPaddingTop() + lp.topMargin;
+				final int width = child.getMeasuredWidth();
+				final int height = child.getMeasuredHeight();
+				child.layout(
+						left,
+						top,
+						left + width,
+						top + height);
+			}
 		}
 		
 	}
@@ -268,7 +297,9 @@ public class ScallingPanningView extends ViewGroup {
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 
-		fixContentRect();
+		getContentRect(contentRect);
+		fixContentRect(contentRect);
+		setContentRect(contentRect);
 	}
 	
 	
@@ -311,6 +342,8 @@ public class ScallingPanningView extends ViewGroup {
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
 			
+			getContentRect(contentRect);
+			
 			diffX = contentRect.left - lastX;
 			diffY = contentRect.top - lastY;
 			
@@ -328,12 +361,13 @@ public class ScallingPanningView extends ViewGroup {
 			}
 			if(isTopValid(rectY) && isBottomValid(rectY + contentRect.height())) {
 				contentRect.bottom = rectY + contentRect.height();
-				contentRect.top = Math.round(rectY);
+				contentRect.top = rectY;
 				changed = true;
 			}
 			
 			if(changed) {
-				ViewCompat.postInvalidateOnAnimation(ScallingPanningView.this);
+				setContentRect(contentRect);
+				ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
 				requestLayout();
 				return true;
 			} else {
@@ -357,11 +391,12 @@ public class ScallingPanningView extends ViewGroup {
 			final float focusX = detector.getFocusX();
 			final float focusY = detector.getFocusY();
 			
-			scaleContentRect(ratio, focusX, focusY);
+			getContentRect(contentRect);
+			scaleContentRect(contentRect, ratio, focusX, focusY);
+			fixContentRect(contentRect);
+			setContentRect(contentRect);
 			
-			fixContentRect();
-			
-			ViewCompat.postInvalidateOnAnimation(ScallingPanningView.this);
+			ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
 			requestLayout();
 			
 			return true;
@@ -381,8 +416,9 @@ public class ScallingPanningView extends ViewGroup {
 	 * 	- If both dimensions of contentRect are too small,
 	 * 		scale up the contentRect so that some dimension fits exactly into the view and the other is smaller.
 	 * </pre>
+	 * @param contentRect
 	 */
-	private void fixContentRect() {// TODO .: rename this !!!
+	private void fixContentRect(RectF contentRect) {// TODO .: rename this !!!
 		/* If contentRect is too small, adapt it.
 		 * 	- If only one side of contentRect is inside this view and contentRect is big enough to contain the view,
 		 * 		move contentRect so that the side is at the edge of the view.
@@ -401,7 +437,8 @@ public class ScallingPanningView extends ViewGroup {
 		 */
 		final boolean wasWidthTooSmall;
 		final boolean wasHeightTooSmall;
-		if(isWidthTooSmall()) {
+//		if(isWidthTooSmall()) {
+		if(virtualWidth < getWidth()) {
 			float contentRectWidth = contentRect.width();
 			contentRect.left = middleX - contentRectWidth / 2;
 			contentRect.right = middleX + contentRectWidth / 2;
@@ -409,7 +446,8 @@ public class ScallingPanningView extends ViewGroup {
 		} else {
 			wasWidthTooSmall = false;
 		}
-		if(isHeightTooSmall()) {
+//		if(isHeightTooSmall()) {
+		if(virtualHeight < getHeight()) {
 			float contentRectHeight = contentRect.height();
 			contentRect.top = middleY - contentRectHeight / 2;
 			contentRect.bottom = middleY + contentRectHeight / 2;
@@ -434,7 +472,7 @@ public class ScallingPanningView extends ViewGroup {
 				ratio = contentWidth / contentRect.width();
 			}
 			
-			scaleContentRect(ratio, middleX, middleY);
+			scaleContentRect(contentRect, ratio, middleX, middleY);
 			
 		}
 		
@@ -576,13 +614,13 @@ public class ScallingPanningView extends ViewGroup {
 	
 	
 	/**
-	 * Scales {@link #contentRect} in <code>ratio</code> around (<code>originX</code>, <code>originY</code>).
-	 * 
+	 * Scales <code>contentRect</code> in <code>ratio</code> around (<code>originX</code>, <code>originY</code>).
+	 * @param contentRect
 	 * @param ratio
 	 * @param originX
 	 * @param originY
 	 */
-	private void scaleContentRect(final float ratio, final float originX, final float originY) {
+	private static void scaleContentRect(RectF contentRect, final float ratio, final float originX, final float originY) {
 		/* 
 		 * Translate origin of coordinate system of contentRect to (originX, originY),
 		 * scale it, and translate it back.

@@ -25,7 +25,7 @@ public class ViewSkuskaActivity extends Activity {
 		mlp.leftMargin = mlp.bottomMargin = 25;
 		mlp.rightMargin = mlp.topMargin = 17;
 		
-		ScallingPanningView scallingPanningView = new ScallingPanningView(this);
+		ScallingPanningView2 scallingPanningView = new ScallingPanningView2(this);
 		scallingPanningView.setPadding(15, 10, 20, 25);
 		
 //		inception.addView(button, mlp);
