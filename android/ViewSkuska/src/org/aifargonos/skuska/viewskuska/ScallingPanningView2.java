@@ -52,12 +52,14 @@ public class ScallingPanningView2 extends ViewGroup {
 	 * <p>
 	 * It must be in floats in order to prevent truncation errors.
 	 */
+	private float scrollXF;
+	private float scrollYF;
 	/**
 	 * These two replace the <code>contentRect</code>, so that
 	 * left and top is always 0.
 	 */
-	private int virtualWidth = 3;// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
-	private int virtualHeight = 4;
+	private float virtualWidth = 400;// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
+	private float virtualHeight = 300;
 	
 	private final GestureDetectorCompat gestureDetector;
 	private ScaleGestureDetector scaleGestureDetector;
@@ -75,12 +77,12 @@ public class ScallingPanningView2 extends ViewGroup {
 	public ScallingPanningView2(Context context, AttributeSet attrs, int defStyleAttr) {
 //		this(context, attrs, defStyleAttr, 0);
 		super(context, attrs, defStyleAttr);
-//		
-//		linePaint.setStrokeWidth(0);
-//		linePaint.setStyle(Paint.Style.STROKE);
-//		
-//		textPaint.setARGB(255, 0, 0, 0);
-//		textPaint.setAntiAlias(true);
+		
+		linePaint.setStrokeWidth(0);
+		linePaint.setStyle(Paint.Style.STROKE);
+		
+		textPaint.setARGB(255, 0, 0, 0);
+		textPaint.setAntiAlias(true);
 		
 		borderPaint.setStrokeWidth(0);
 		borderPaint.setStyle(Paint.Style.STROKE);
@@ -136,45 +138,51 @@ public class ScallingPanningView2 extends ViewGroup {
 				+ getPaddingTop() + getPaddingBottom()
 				+ lp.topMargin + lp.bottomMargin;
 	}
-//	
-//	
-//	
-//	// TODO [layout] .: Remove these after there can be some components inside.
-//	private Paint linePaint = new Paint();
-//	private Paint textPaint = new Paint();
+	
+	
+	
+	// TODO [layout] .: Remove these after there can be some components inside.
+	private Paint linePaint = new Paint();
+	private Paint textPaint = new Paint();
 	private Paint borderPaint = new Paint();
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-//		
-//		linePaint.setStrokeWidth(contentRect.height() / 10);
-//		
-//		linePaint.setARGB(255, 0, 255, 0);
-//		canvas.drawLine(
-//				contentRect.left, (contentRect.top + contentRect.bottom) / 2,
-//				contentRect.right, (contentRect.top + contentRect.bottom) / 2,
-//				linePaint);
-//		
-//		linePaint.setARGB(255, 0, 0, 255);
-//		canvas.drawLine(
-//				(contentRect.left + contentRect.right) / 2, contentRect.top,
-//				(contentRect.left + contentRect.right) / 2, contentRect.bottom,
-//				linePaint);
-//		
-//		linePaint.setARGB(255, 255, 0, 0);
-//		canvas.drawLine(
-//				contentRect.left, contentRect.top,
-//				contentRect.right, contentRect.bottom,
-//				linePaint);
-//		
-//		
-//		textPaint.setTextSize(contentRect.height() / 3);
-//		
-//		canvas.drawText("text",
-//				contentRect.left, (contentRect.top + contentRect.bottom) / 2,
-//				textPaint);
-//		
+		
+		final float left = getPaddingLeft();
+		final float top = getPaddingTop();
+		final float right = virtualWidth - getPaddingRight();
+		final float bottom = virtualHeight - getPaddingBottom();
+		final float height = bottom - top;
+		
+		linePaint.setStrokeWidth(height / 10);
+		
+		linePaint.setARGB(255, 0, 255, 0);
+		canvas.drawLine(
+				left, (top + bottom) / 2,
+				right, (top + bottom) / 2,
+				linePaint);
+		
+		linePaint.setARGB(255, 0, 0, 255);
+		canvas.drawLine(
+				(left + right) / 2, top,
+				(left + right) / 2, bottom,
+				linePaint);
+		
+		linePaint.setARGB(255, 255, 0, 0);
+		canvas.drawLine(
+				left, top,
+				right, bottom,
+				linePaint);
+		
+		
+		textPaint.setTextSize(height / 3);
+		
+		canvas.drawText("text",
+				left, (top + bottom) / 2,
+				textPaint);
+		
 		borderPaint.setARGB(255, 0, 255, 0);
 		canvas.drawRect(
 				0, 0,
@@ -200,12 +208,12 @@ public class ScallingPanningView2 extends ViewGroup {
 				final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
 				child.measure(
 						MeasureSpec.makeMeasureSpec(
-								Math.max(0, virtualWidth
+								Math.max(0, (int)virtualWidth
 										- getPaddingLeft() - getPaddingRight()
 										- lp.leftMargin - lp.rightMargin),
 								MeasureSpec.EXACTLY),
 						MeasureSpec.makeMeasureSpec(
-								Math.max(0, virtualHeight
+								Math.max(0, (int)virtualHeight
 										- getPaddingTop() - getPaddingBottom()
 										- lp.topMargin - lp.bottomMargin),
 								MeasureSpec.EXACTLY));
@@ -214,8 +222,8 @@ public class ScallingPanningView2 extends ViewGroup {
 		
 		// I want to be my virtual size.
 		// Apply the restrictions from parent.
-		final int resolvedWidth = resolveSize(virtualWidth, widthMeasureSpec);
-		final int resolvedHeight = resolveSize(virtualHeight, heightMeasureSpec);
+		final int resolvedWidth = resolveSize((int)(virtualWidth + 0.5f), widthMeasureSpec);
+		final int resolvedHeight = resolveSize((int)(virtualHeight + 0.5f), heightMeasureSpec);
 		
 		// I should be of the resolved size, but at least the minimal size.
 		setMeasuredDimension(
@@ -274,12 +282,8 @@ public class ScallingPanningView2 extends ViewGroup {
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 
-		PointF scroll = new PointF(getScrollX(), getScrollY());
-		PointF size = new PointF(virtualWidth, virtualHeight);
-		fixContentRect(scroll, size);
-		scrollTo((int)(scroll.x + 0.49f), (int)(scroll.y + 0.49f));
-		virtualWidth = (int)(size.x + 0.49f);
-		virtualHeight = (int)(size.y + 0.49f);
+		fixContentRect();
+		scrollTo((int)(scrollXF), (int)(scrollYF));
 	}
 	
 	
@@ -302,75 +306,33 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	private final GestureDetector.SimpleOnGestureListener gestureListener =
 			new GestureDetector.SimpleOnGestureListener() {
-//		
-//		private float lastX;
-//		private float lastY;
-//		private float diffX;
-//		private float diffY;
-//		private float rectX;
-//		private float rectY;
-//		private boolean changed;
 		
 		@Override
 		public boolean onDown(MotionEvent e) {
-//			lastX = e.getX();
-//			lastY = e.getY();
 			return true;
 		}
 		
 		@Override
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
-//			
-//			getContentRect(contentRect);
-//			
-//			diffX = contentRect.left - lastX;
-//			diffY = contentRect.top - lastY;
-//			
-//			lastX = e2.getX();
-//			lastY = e2.getY();
-//			
-//			rectX = lastX + diffX;
-//			rectY = lastY + diffY;
-//			
-//			changed = false;
-//			if(isLeftValid(rectX) && isRightValid(rectX + contentRect.width())) {
-//				contentRect.right = rectX + contentRect.width();
-//				contentRect.left = rectX;
-//				changed = true;
-//			}
-//			if(isTopValid(rectY) && isBottomValid(rectY + contentRect.height())) {
-//				contentRect.bottom = rectY + contentRect.height();
-//				contentRect.top = rectY;
-//				changed = true;
-//			}
-//			
-//			if(changed) {
-//				setContentRect(contentRect);
-//				ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
-//				requestLayout();
-//				return true;
-//			} else {
-//				return false;
-//			}
 			
-			final int currentScrollX = getScrollX();
-			final int currentScrollY = getScrollY();
+			final float currentScrollX = scrollXF;
+			final float currentScrollY = scrollYF;
 			
-			int newScrollX = currentScrollX + (int)(distanceX + 0.49f);
-			int newScrollY = currentScrollY + (int)(distanceY + 0.49f);
+			scrollXF = currentScrollX + distanceX;
+			scrollYF = currentScrollY + distanceY;
 			
-			final int rangeX = virtualWidth - getWidth();
-			final int rangeY = virtualHeight - getHeight();
+			final float rangeX = virtualWidth - getWidth();
+			final float rangeY = virtualHeight - getHeight();
 			
-			if(newScrollX < 0 || rangeX < newScrollX) {
-				newScrollX = currentScrollX;
+			if(scrollXF < 0 || rangeX < scrollXF) {
+				scrollXF = currentScrollX;
 			}
-			if(newScrollY < 0 || rangeY < newScrollY) {
-				newScrollY = currentScrollY;
+			if(scrollYF < 0 || rangeY < scrollYF) {
+				scrollYF = currentScrollY;
 			}
 			
-			scrollTo(newScrollX, newScrollY);
+			scrollTo((int)(scrollXF), (int)(scrollYF));
 			
 			ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
 			requestLayout();
@@ -388,18 +350,14 @@ public class ScallingPanningView2 extends ViewGroup {
 		@Override
 		public boolean onScale(ScaleGestureDetector detector) {
 			
-			float ratio = detector.getCurrentSpan() / detector.getPreviousSpan();
+			final float ratio = detector.getCurrentSpan() / detector.getPreviousSpan();
 			
 			final float focusX = detector.getFocusX();
 			final float focusY = detector.getFocusY();
 			
-			PointF scroll = new PointF(getScrollX(), getScrollY());
-			PointF size = new PointF(virtualWidth, virtualHeight);
-			scaleContentRect(scroll, size, ratio, focusX, focusY);
-			fixContentRect(scroll, size);
-			scrollTo((int)(scroll.x + 0.49f), (int)(scroll.y + 0.49f));
-			virtualWidth = (int)(size.x + 0.49f);
-			virtualHeight = (int)(size.y + 0.49f);
+			scaleContentRect(ratio, focusX, focusY);
+			fixContentRect();
+			scrollTo((int)(scrollXF), (int)(scrollYF));
 			
 			ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
 			requestLayout();
@@ -421,10 +379,8 @@ public class ScallingPanningView2 extends ViewGroup {
 	 * 	- If both dimensions of contentRect are too small,
 	 * 		scale up the contentRect so that some dimension fits exactly into the view and the other is smaller.
 	 * </pre>
-	 * @param scroll TODO
-	 * @param size TODO
 	 */
-	private void fixContentRect(PointF scroll, PointF size) {// TODO .: rename this !!!
+	private void fixContentRect() {// TODO .: rename this !!!
 		/* If contentRect is too small, adapt it.
 		 * 	- If only one side of contentRect is inside this view and contentRect is big enough to contain the view,
 		 * 		move contentRect so that the side is at the edge of the view.
@@ -447,13 +403,13 @@ public class ScallingPanningView2 extends ViewGroup {
 		final boolean wasWidthTooSmall;
 		final boolean wasHeightTooSmall;
 		if(virtualWidth < width) {
-			scroll.x = rangeX / 2;
+			scrollXF = rangeX / 2;
 			wasWidthTooSmall = true;
 		} else {
 			wasWidthTooSmall = false;
 		}
 		if(virtualHeight < height) {
-			scroll.y = rangeY / 2;
+			scrollYF = rangeY / 2;
 			wasHeightTooSmall = true;
 		} else {
 			wasHeightTooSmall = false;
@@ -465,17 +421,17 @@ public class ScallingPanningView2 extends ViewGroup {
 			final float ratio;
 			
 			// Choose which dimension should fit.
-			if(width / ((float)height) > virtualWidth / ((float)virtualHeight)) {
+			if(width / ((float)height) > virtualWidth / virtualHeight) {
 				// This view is wider than contentRect, so match height.
-				ratio = height / ((float)virtualHeight);
+				ratio = height / virtualHeight;
 			} else {
 				// This view is higher than contentRect, so match width.
-				ratio = width / ((float)virtualWidth);
+				ratio = width / virtualWidth;
 			}
 			
 			final float middleX = width / 2.0f;
 			final float middleY = height / 2.0f;
-			scaleContentRect(scroll, size, ratio, middleX, middleY);
+			scaleContentRect(ratio, middleX, middleY);
 			
 		}
 		
@@ -485,18 +441,18 @@ public class ScallingPanningView2 extends ViewGroup {
 		 */
 		if(!wasWidthTooSmall) {
 			// clamp
-			if(scroll.x < 0) {
-				scroll.x = 0;
-			} else if(scroll.x > rangeX) {
-				scroll.x = rangeX;
+			if(scrollXF < 0) {
+				scrollXF = 0;
+			} else if(scrollXF > rangeX) {
+				scrollXF = rangeX;
 			}
 		}
 		if(!wasHeightTooSmall) {
 			// clamp
-			if(scroll.y < 0) {
-				scroll.y = 0;
-			} else if(scroll.y > rangeY) {
-				scroll.y = rangeY;
+			if(scrollYF < 0) {
+				scrollYF = 0;
+			} else if(scrollYF > rangeY) {
+				scrollYF = rangeY;
 			}
 		}
 		
@@ -506,21 +462,20 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	/**
 	 * Scales <code>contentRect</code> in <code>ratio</code> around (<code>originX</code>, <code>originY</code>).
-	 * @param scroll TODO
-	 * @param size TODO
 	 * @param ratio
 	 * @param originX
 	 * @param originY
 	 */
-	private static void scaleContentRect(PointF scroll, PointF size, final float ratio, final float originX, final float originY) {
+	private void scaleContentRect(final float ratio, final float originX,
+			final float originY) {
 		/* 
 		 * Translate origin of coordinate system of contentRect to (originX, originY),
 		 * scale it, and translate it back.
 		 */
-		scroll.x = ((scroll.x - originX) * ratio) + originX;
-		scroll.y = ((scroll.y - originX) * ratio) + originX;
-		size.x *= ratio;
-		size.y *= ratio;
+		scrollXF = ((scrollXF + originX) * ratio) - originX;
+		scrollYF = ((scrollYF + originX) * ratio) - originX;
+		virtualWidth *= ratio;
+		virtualHeight *= ratio;
 	}
 	
 	

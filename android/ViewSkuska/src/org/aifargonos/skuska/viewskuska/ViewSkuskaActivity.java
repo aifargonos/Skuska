@@ -30,7 +30,7 @@ public class ViewSkuskaActivity extends Activity {
 		
 //		inception.addView(button, mlp);
 //		layout.addView(inception);
-		scallingPanningView.addView(button, mlp);
+//		scallingPanningView.addView(button, mlp);
 		layout.addView(scallingPanningView);
 		setContentView(layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 //		setContentView(R.layout.activity_view_skuska);
