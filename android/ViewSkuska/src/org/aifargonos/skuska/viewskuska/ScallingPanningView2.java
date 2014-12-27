@@ -3,8 +3,7 @@ package org.aifargonos.skuska.viewskuska;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.PointF;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -13,9 +12,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.MeasureSpec;
-import android.view.ViewGroup.LayoutParams;
-import android.view.ViewGroup.MarginLayoutParams;
 
 
 
@@ -56,37 +52,12 @@ public class ScallingPanningView2 extends ViewGroup {
 	 * <p>
 	 * It must be in floats in order to prevent truncation errors.
 	 */
-	private RectF contentRect = new RectF();
 	/**
 	 * These two replace the <code>contentRect</code>, so that
 	 * left and top is always 0.
 	 */
 	private int virtualWidth = 3;// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
 	private int virtualHeight = 4;
-	
-	/**
-	 * Translates internal variables into logical contentRect.
-	 * 
-	 * @param rect The rectangle that is adapted to contain the logical contentRect.
-	 */
-	private void getContentRect(RectF rect) {
-		rect.set(
-				-getScrollX(),
-				-getScrollY(),
-				-getScrollX() + virtualWidth - getPaddingLeft() - getPaddingRight(),
-				-getScrollY() + virtualHeight - getPaddingTop() - getPaddingBottom());
-	}
-	
-	/**
-	 * Sets internal variables according to <code>rect</code>.
-	 * 
-	 * @param rect
-	 */
-	private void setContentRect(RectF rect) {
-		virtualWidth = (int)(rect.width() + getPaddingLeft() + getPaddingRight() + 0.5f);
-		virtualHeight = (int)(rect.height() + getPaddingTop() + getPaddingBottom() + 0.5f);
-		scrollTo(-(int)(rect.left + 0.5f), -(int)(rect.top + 0.5f));
-	}
 	
 	private final GestureDetectorCompat gestureDetector;
 	private ScaleGestureDetector scaleGestureDetector;
@@ -113,7 +84,6 @@ public class ScallingPanningView2 extends ViewGroup {
 		
 		borderPaint.setStrokeWidth(0);
 		borderPaint.setStyle(Paint.Style.STROKE);
-		borderPaint.setARGB(255, 0, 0, 255);
 		
 		setWillNotDraw(false);
 		
@@ -205,9 +175,16 @@ public class ScallingPanningView2 extends ViewGroup {
 //				contentRect.left, (contentRect.top + contentRect.bottom) / 2,
 //				textPaint);
 //		
+		borderPaint.setARGB(255, 0, 255, 0);
+		canvas.drawRect(
+				0, 0,
+				virtualWidth, virtualHeight,
+				borderPaint);
+		
+		borderPaint.setARGB(255, 0, 0, 255);
 		canvas.drawRect(
 				getPaddingLeft(), getPaddingTop(),
-				virtualWidth + getPaddingRight(), virtualHeight + getPaddingBottom(),
+				virtualWidth - getPaddingRight(), virtualHeight - getPaddingBottom(),
 				borderPaint);
 	}
 	
@@ -297,9 +274,12 @@ public class ScallingPanningView2 extends ViewGroup {
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 
-		getContentRect(contentRect);
-		fixContentRect(contentRect);
-		setContentRect(contentRect);
+		PointF scroll = new PointF(getScrollX(), getScrollY());
+		PointF size = new PointF(virtualWidth, virtualHeight);
+		fixContentRect(scroll, size);
+		scrollTo((int)(scroll.x + 0.49f), (int)(scroll.y + 0.49f));
+		virtualWidth = (int)(size.x + 0.49f);
+		virtualHeight = (int)(size.y + 0.49f);
 	}
 	
 	
@@ -322,57 +302,79 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	private final GestureDetector.SimpleOnGestureListener gestureListener =
 			new GestureDetector.SimpleOnGestureListener() {
-		
-		private float lastX;
-		private float lastY;
-		private float diffX;
-		private float diffY;
-		private float rectX;
-		private float rectY;
-		private boolean changed;
+//		
+//		private float lastX;
+//		private float lastY;
+//		private float diffX;
+//		private float diffY;
+//		private float rectX;
+//		private float rectY;
+//		private boolean changed;
 		
 		@Override
 		public boolean onDown(MotionEvent e) {
-			lastX = e.getX();
-			lastY = e.getY();
+//			lastX = e.getX();
+//			lastY = e.getY();
 			return true;
 		}
 		
 		@Override
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
+//			
+//			getContentRect(contentRect);
+//			
+//			diffX = contentRect.left - lastX;
+//			diffY = contentRect.top - lastY;
+//			
+//			lastX = e2.getX();
+//			lastY = e2.getY();
+//			
+//			rectX = lastX + diffX;
+//			rectY = lastY + diffY;
+//			
+//			changed = false;
+//			if(isLeftValid(rectX) && isRightValid(rectX + contentRect.width())) {
+//				contentRect.right = rectX + contentRect.width();
+//				contentRect.left = rectX;
+//				changed = true;
+//			}
+//			if(isTopValid(rectY) && isBottomValid(rectY + contentRect.height())) {
+//				contentRect.bottom = rectY + contentRect.height();
+//				contentRect.top = rectY;
+//				changed = true;
+//			}
+//			
+//			if(changed) {
+//				setContentRect(contentRect);
+//				ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
+//				requestLayout();
+//				return true;
+//			} else {
+//				return false;
+//			}
 			
-			getContentRect(contentRect);
+			final int currentScrollX = getScrollX();
+			final int currentScrollY = getScrollY();
 			
-			diffX = contentRect.left - lastX;
-			diffY = contentRect.top - lastY;
+			int newScrollX = currentScrollX + (int)(distanceX + 0.49f);
+			int newScrollY = currentScrollY + (int)(distanceY + 0.49f);
 			
-			lastX = e2.getX();
-			lastY = e2.getY();
+			final int rangeX = virtualWidth - getWidth();
+			final int rangeY = virtualHeight - getHeight();
 			
-			rectX = lastX + diffX;
-			rectY = lastY + diffY;
-			
-			changed = false;
-			if(isLeftValid(rectX) && isRightValid(rectX + contentRect.width())) {
-				contentRect.right = rectX + contentRect.width();
-				contentRect.left = rectX;
-				changed = true;
+			if(newScrollX < 0 || rangeX < newScrollX) {
+				newScrollX = currentScrollX;
 			}
-			if(isTopValid(rectY) && isBottomValid(rectY + contentRect.height())) {
-				contentRect.bottom = rectY + contentRect.height();
-				contentRect.top = rectY;
-				changed = true;
+			if(newScrollY < 0 || rangeY < newScrollY) {
+				newScrollY = currentScrollY;
 			}
 			
-			if(changed) {
-				setContentRect(contentRect);
-				ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
-				requestLayout();
-				return true;
-			} else {
-				return false;
-			}
+			scrollTo(newScrollX, newScrollY);
+			
+			ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
+			requestLayout();
+			return true;
 			
 		}
 		
@@ -391,10 +393,13 @@ public class ScallingPanningView2 extends ViewGroup {
 			final float focusX = detector.getFocusX();
 			final float focusY = detector.getFocusY();
 			
-			getContentRect(contentRect);
-			scaleContentRect(contentRect, ratio, focusX, focusY);
-			fixContentRect(contentRect);
-			setContentRect(contentRect);
+			PointF scroll = new PointF(getScrollX(), getScrollY());
+			PointF size = new PointF(virtualWidth, virtualHeight);
+			scaleContentRect(scroll, size, ratio, focusX, focusY);
+			fixContentRect(scroll, size);
+			scrollTo((int)(scroll.x + 0.49f), (int)(scroll.y + 0.49f));
+			virtualWidth = (int)(size.x + 0.49f);
+			virtualHeight = (int)(size.y + 0.49f);
 			
 			ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
 			requestLayout();
@@ -416,9 +421,10 @@ public class ScallingPanningView2 extends ViewGroup {
 	 * 	- If both dimensions of contentRect are too small,
 	 * 		scale up the contentRect so that some dimension fits exactly into the view and the other is smaller.
 	 * </pre>
-	 * @param contentRect
+	 * @param scroll TODO
+	 * @param size TODO
 	 */
-	private void fixContentRect(RectF contentRect) {// TODO .: rename this !!!
+	private void fixContentRect(PointF scroll, PointF size) {// TODO .: rename this !!!
 		/* If contentRect is too small, adapt it.
 		 * 	- If only one side of contentRect is inside this view and contentRect is big enough to contain the view,
 		 * 		move contentRect so that the side is at the edge of the view.
@@ -428,29 +434,26 @@ public class ScallingPanningView2 extends ViewGroup {
 		 * 		scale up the contentRect so that some dimension fits exactly into the view and the other is smaller.
 		 */
 		
-		final float middleX = (getPaddingLeft() + getWidth() - getPaddingRight()) / 2.0f;
-		final float middleY = (getPaddingTop() + getHeight() - getPaddingBottom()) / 2.0f;
+		final int width = getWidth();
+		final int height = getHeight();
+		
+		final float rangeX = virtualWidth - width;
+		final float rangeY = virtualHeight - height;
 		
 		/* First, center the small dimensions.
 		 * 	Once some dimension is too small, it would be moved anyway
-		 * 	and it needs to be centered of the scaling up should occur.
+		 * 	and it needs to be centered should the scaling up occur.
 		 */
 		final boolean wasWidthTooSmall;
 		final boolean wasHeightTooSmall;
-//		if(isWidthTooSmall()) {
-		if(virtualWidth < getWidth()) {
-			float contentRectWidth = contentRect.width();
-			contentRect.left = middleX - contentRectWidth / 2;
-			contentRect.right = middleX + contentRectWidth / 2;
+		if(virtualWidth < width) {
+			scroll.x = rangeX / 2;
 			wasWidthTooSmall = true;
 		} else {
 			wasWidthTooSmall = false;
 		}
-//		if(isHeightTooSmall()) {
-		if(virtualHeight < getHeight()) {
-			float contentRectHeight = contentRect.height();
-			contentRect.top = middleY - contentRectHeight / 2;
-			contentRect.bottom = middleY + contentRectHeight / 2;
+		if(virtualHeight < height) {
+			scroll.y = rangeY / 2;
 			wasHeightTooSmall = true;
 		} else {
 			wasHeightTooSmall = false;
@@ -462,17 +465,17 @@ public class ScallingPanningView2 extends ViewGroup {
 			final float ratio;
 			
 			// Choose which dimension should fit.
-			final int contentWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-			final int contentHeight = getHeight() - getPaddingTop() - getPaddingBottom();
-			if(contentWidth / ((float)contentHeight) > contentRect.width() / contentRect.height()) {
+			if(width / ((float)height) > virtualWidth / ((float)virtualHeight)) {
 				// This view is wider than contentRect, so match height.
-				ratio = contentHeight / contentRect.height();
+				ratio = height / ((float)virtualHeight);
 			} else {
 				// This view is higher than contentRect, so match width.
-				ratio = contentWidth / contentRect.width();
+				ratio = width / ((float)virtualWidth);
 			}
 			
-			scaleContentRect(contentRect, ratio, middleX, middleY);
+			final float middleX = width / 2.0f;
+			final float middleY = height / 2.0f;
+			scaleContentRect(scroll, size, ratio, middleX, middleY);
 			
 		}
 		
@@ -481,23 +484,19 @@ public class ScallingPanningView2 extends ViewGroup {
 		 * 	The case when it is not is dealt with above.
 		 */
 		if(!wasWidthTooSmall) {
-			if(!isLeftValid(contentRect.left)) {
-				contentRect.right = getPaddingLeft() + contentRect.width();
-				contentRect.left = getPaddingLeft();
-			}
-			if(!isRightValid(contentRect.right)) {
-				contentRect.left = getWidth() - getPaddingRight() - contentRect.width();
-				contentRect.right = getWidth() - getPaddingRight();
+			// clamp
+			if(scroll.x < 0) {
+				scroll.x = 0;
+			} else if(scroll.x > rangeX) {
+				scroll.x = rangeX;
 			}
 		}
 		if(!wasHeightTooSmall) {
-			if(!isTopValid(contentRect.top)) {
-				contentRect.bottom = getPaddingTop() + contentRect.height();
-				contentRect.top = getPaddingTop();
-			}
-			if(!isBottomValid(contentRect.bottom)) {
-				contentRect.top = getHeight() - getPaddingBottom() - contentRect.height();
-				contentRect.bottom = getHeight() - getPaddingBottom();
+			// clamp
+			if(scroll.y < 0) {
+				scroll.y = 0;
+			} else if(scroll.y > rangeY) {
+				scroll.y = rangeY;
 			}
 		}
 		
@@ -506,129 +505,22 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	
 	/**
-	 * Checks whether <code>left</code> can be assigned to <code>{@link #contentRect}.left</code>.
-	 * 
-	 * @param left
-	 * @return <code>true</code> iff <code>left</code> is at most <code>{@link #getPaddingLeft()}</code>.
-	 */
-	private boolean isLeftValid(final float left) {
-		return left <= getPaddingLeft();
-	}
-	
-	/**
-	 * Checks whether <code>right</code> can be assigned to <code>{@link #contentRect}.right</code>.
-	 * 
-	 * @param right
-	 * @return <code>true</code> iff <code>right</code> is at least <code>{@link #getWidth()} - {@link #getPaddingRight()}</code>.
-	 */
-	private boolean isRightValid(final float right) {
-		return right >= getWidth() - getPaddingRight();
-	}
-	
-	/**
-	 * Checks whether <code>top</code> can be assigned to <code>{@link #contentRect}.top</code>.
-	 * 
-	 * @param top
-	 * @return <code>true</code> iff <code>top</code> is at most <code>{@link #getPaddingTop()}</code>.
-	 */
-	private boolean isTopValid(final float top) {
-		return top <= getPaddingTop();
-	}
-	
-	/**
-	 * Checks whether <code>bottom</code> can be assigned to <code>{@link #contentRect}.bottom</code>.
-	 * 
-	 * @param bottom
-	 * @return <code>true</code> iff <code>bottom</code> is at least <code>{@link #getHeight()} - {@link #getPaddingBottom()}</code>.
-	 */
-	private boolean isBottomValid(final float bottom) {
-		return bottom >= getHeight() - getPaddingBottom();
-	}
-	
-	/**
-	 * Just a conjunction of {@link #isLeftValid(float)} and {@link #isRightValid(float)}.
-	 * 
-	 * @param left
-	 * @param right
-	 * @return
-	 */
-	private boolean isLeftRightValid(final float left, final float right) {
-		return isLeftValid(left) && isRightValid(right);
-	}
-	
-	/**
-	 * Just a conjunction of {@link #isTopValid(float)} and {@link #isBottomValid(float)}.
-	 * 
-	 * @param top
-	 * @param bottom
-	 * @return
-	 */
-	private boolean isTopBottomValid(final float top, final float bottom) {
-		return isTopValid(top) && isBottomValid(bottom);
-	}
-	
-	/**
-	 * Just a conjunction of {@link #isLeftRightValid(float, float)} and {@link #isTopBottomValid(float, float)}.
-	 * 
-	 * @param left
-	 * @param top
-	 * @param right
-	 * @param bottom
-	 * @return
-	 */
-	private boolean isRectValid(final float left, final float top,
-			final float right, final float bottom) {
-		return isLeftRightValid(left, right) && isTopBottomValid(top, bottom);
-	}
-	
-	/**
-	 * Just a conjunction of {@link #isLeftRightValid(float, float)} and {@link #isTopBottomValid(float, float)}.
-	 * 
-	 * @param rect
-	 * @return
-	 */
-	private boolean isRectValid(final RectF rect) {
-		return isRectValid(rect.left, rect.top, rect.right, rect.bottom);
-	}
-	
-	
-	/**
-	 * Checks whether the width of {@link #contentRect} is too small to contain this view without horizontal padding.
-	 * 
-	 * @return <code>true</code> iff the width of {@link #contentRect} is smaller than
-	 * 	the width of this view minus its horizontal padding.
-	 */
-	private boolean isWidthTooSmall() {
-		return contentRect.width() < getWidth() - getPaddingLeft() - getPaddingRight();
-	}
-	
-	/**
-	 * Checks whether the height of {@link #contentRect} is too small to contain this view without vertical padding.
-	 * 
-	 * @return <code>true</code> iff the hight of {@link #contentRect} is smaller than
-	 * 	the height of this view minus its vertical padding.
-	 */
-	private boolean isHeightTooSmall() {
-		return contentRect.height() < getHeight() - getPaddingTop() - getPaddingBottom();
-	}
-	
-	
-	/**
 	 * Scales <code>contentRect</code> in <code>ratio</code> around (<code>originX</code>, <code>originY</code>).
-	 * @param contentRect
+	 * @param scroll TODO
+	 * @param size TODO
 	 * @param ratio
 	 * @param originX
 	 * @param originY
 	 */
-	private static void scaleContentRect(RectF contentRect, final float ratio, final float originX, final float originY) {
+	private static void scaleContentRect(PointF scroll, PointF size, final float ratio, final float originX, final float originY) {
 		/* 
 		 * Translate origin of coordinate system of contentRect to (originX, originY),
 		 * scale it, and translate it back.
 		 */
-		contentRect.left = ((contentRect.left - originX) * ratio) + originX;
-		contentRect.top = ((contentRect.top - originY) * ratio) + originY;
-		contentRect.right = ((contentRect.right - originX) * ratio) + originX;
-		contentRect.bottom = ((contentRect.bottom - originY) * ratio) + originY;
+		scroll.x = ((scroll.x - originX) * ratio) + originX;
+		scroll.y = ((scroll.y - originX) * ratio) + originX;
+		size.x *= ratio;
+		size.y *= ratio;
 	}
 	
 	
