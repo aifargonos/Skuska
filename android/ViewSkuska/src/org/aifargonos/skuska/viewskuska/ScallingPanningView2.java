@@ -3,7 +3,6 @@ package org.aifargonos.skuska.viewskuska;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -20,19 +19,24 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	
 	/* TODO .: get inspired by ScrollView
-	 * 	TODO: mScrollX/Y, computeScroll, onScrollChanged and scrollTo, setOverScrollMode, setScrollContainer, requestRectangleOnScreen!!!???, getLocationInWindow
-	 * 		computeHorizontalScrollRange, computeHorizontalScrollOffset, computeHorizontalScrollExtent
-	 * 		canScrollHorizontally
-	 * 	TODO: scroll bars and awakenScrollBars ... getScrollBarSize, onDrawScrollBars
-	 * 	TODO: instantiate from layout.xml
-	 * 	DONE: shouldDelayChildPressedState
-	 * 	TODO: getNestedScrollAxes and onNestedScroll... ???
-	 * 	TODO: use Scroller (maybe only needed for FadingEdge or fling)
-	 * 	TODO: FadingEdge animation, getTopFadingEdgeStrength
-	 * 	TODO: overScrollBy, onOverScrolled and onScrollChanged ???
-	 * 	TODO: all addView should throw IllegalStateException("ScrollView can host only one direct child")
-	 * 	TODO: fling
+	 * 	DONE: Implement the scrolling using mScrollX/Y.
+	 * 		It can be controlled by scrollTo.
+	 * 	TODO: Layout should be done by descendants!
 	 * 	TODO: onInterceptTouchEvent
+	 * 	TODO: inflate from layout.xml
+	 * 	TODO: Scroll bars
+	 * 		awakenScrollBars ... getScrollBarSize, onDrawScrollBars
+	 * 		computeHorizontalScrollRange, computeHorizontalScrollOffset, computeHorizontalScrollExtent
+	 * 	TODO: Overscroll, Scroller and Fling
+	 * 		setOverScrollMode, overScrollBy, onOverScrolled
+	 * 	TODO: FadingEdge animation
+	 * 		getTopFadingEdgeStrength
+	 * 	TODO: other scroll support ...
+	 * 		computeScroll, onScrollChanged, setScrollContainer, requestRectangleOnScreen!!!???, getLocationInWindow
+	 * 		canScrollHorizontally, onScrollChanged
+	 * 	DONE: shouldDelayChildPressedState
+	 * 	TODO: Nested Scroll
+	 * 		getNestedScrollAxes and onNestedScroll... ???
 	 * 	TODO: SavedState as in ScrollView
 	 * 	TODO: focus ???
 	 * 	TODO: performAccessibilityAction, onInitializeAccessibilityNodeInfo, onInitializeAccessibilityEvent
@@ -58,8 +62,8 @@ public class ScallingPanningView2 extends ViewGroup {
 	 * These two replace the <code>contentRect</code>, so that
 	 * left and top is always 0.
 	 */
-	private float virtualWidth = 400;// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
-	private float virtualHeight = 300;
+	private float virtualWidth = 4;// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
+	private float virtualHeight = 3;
 	
 	private final GestureDetectorCompat gestureDetector;
 	private ScaleGestureDetector scaleGestureDetector;
@@ -101,11 +105,10 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	@Override
 	public void addView(View child, int index, LayoutParams params) {
-		// TODO [layout] .: Delegate to a Layout
 //		removeAllViews();
 		removeAllViewsInLayout();
 		super.addView(child, index, params);
-		/* TODO [layout] .: Extend contentRect when a child is added!
+		/* TODO [layout] .: Descendant should enlarge the client area to fit the new child in it.
 		 * 	ask the child what size it wants to be
 		 * 	set contentRect to that size ;-)
 		 */
@@ -114,11 +117,10 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	@Override
 	protected boolean addViewInLayout(View child, int index, LayoutParams params, boolean preventRequestLayout) {
-		// TODO [layout] .: Delegate to a Layout
 //		removeAllViews();
 		removeAllViewsInLayout();
 		boolean ret = super.addViewInLayout(child, index, params, preventRequestLayout);
-		/* TODO [layout] .: Extend contentRect when a child is added!
+		/* TODO [layout] .: Descendant should enlarge the client area to fit the new child in it.
 		 * 	ask the child what size it wants to be
 		 * 	set contentRect to that size ;-)
 		 */
@@ -473,7 +475,7 @@ public class ScallingPanningView2 extends ViewGroup {
 		 * scale it, and translate it back.
 		 */
 		scrollXF = ((scrollXF + originX) * ratio) - originX;
-		scrollYF = ((scrollYF + originX) * ratio) - originX;
+		scrollYF = ((scrollYF + originY) * ratio) - originY;
 		virtualWidth *= ratio;
 		virtualHeight *= ratio;
 	}
