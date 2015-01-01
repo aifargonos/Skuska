@@ -3,6 +3,7 @@ package org.aifargonos.skuska.viewskuska;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -14,7 +15,7 @@ import android.view.ViewGroup;
 
 
 
-public class ScallingPanningView2 extends ViewGroup {
+public abstract class ScallingPanningView2 extends ViewGroup {
 	
 	
 	
@@ -56,14 +57,32 @@ public class ScallingPanningView2 extends ViewGroup {
 	 * <p>
 	 * It must be in floats in order to prevent truncation errors.
 	 */
+	/**
+	 * Float version of {@link #getScrollX()}. Used to prevent rounding errors.
+	 * This is just a local copy, in order to take effect,
+	 * it has to be written to the original value by {@link #scrollTo(int, int)}.
+	 */
 	private float scrollXF;
+	/**
+	 * Float version of {@link #getScrollY()}. Used to prevent rounding errors.
+	 * This is just a local copy, in order to take effect,
+	 * it has to be written to the original value by {@link #scrollTo(int, int)}.
+	 */
 	private float scrollYF;
 	/**
 	 * These two replace the <code>contentRect</code>, so that
 	 * left and top is always 0.
 	 */
-	private float virtualWidth = 4;// TODO [layout] .: initialize contentRect with all 0-s and enlarge it when children are added!
-	private float virtualHeight = 3;
+	/**
+	 * Width of the client area where the children should be laid out.
+	 * Scroll occurs over this area and this is the are that is scaled.
+	 */
+	private float virtualWidth = 0;
+	/**
+	 * Height of the client area where the children should be laid out.
+	 * Scroll occurs over this area and this is the are that is scaled.
+	 */
+	private float virtualHeight = 0;
 	
 	private final GestureDetectorCompat gestureDetector;
 	private ScaleGestureDetector scaleGestureDetector;
@@ -105,41 +124,35 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	@Override
 	public void addView(View child, int index, LayoutParams params) {
-//		removeAllViews();
-		removeAllViewsInLayout();
 		super.addView(child, index, params);
-		/* TODO [layout] .: Descendant should enlarge the client area to fit the new child in it.
-		 * 	ask the child what size it wants to be
-		 * 	set contentRect to that size ;-)
-		 */
-		resetContentRectAccordingToChild(child);
+		
+		RectF clientArea = new RectF();
+		getClientArea(clientArea);
+		adaptClientAreaToNewChild(child, clientArea);
+		scrollXF -= clientArea.left;
+		scrollYF -= clientArea.top;
+		scrollTo((int)(scrollXF), (int)(scrollYF));
+		virtualWidth = clientArea.width();
+		virtualHeight = clientArea.height();
 	}
 	
 	@Override
 	protected boolean addViewInLayout(View child, int index, LayoutParams params, boolean preventRequestLayout) {
-//		removeAllViews();
-		removeAllViewsInLayout();
 		boolean ret = super.addViewInLayout(child, index, params, preventRequestLayout);
-		/* TODO [layout] .: Descendant should enlarge the client area to fit the new child in it.
-		 * 	ask the child what size it wants to be
-		 * 	set contentRect to that size ;-)
-		 */
-		resetContentRectAccordingToChild(child);
+		
+		RectF clientArea = new RectF();
+		getClientArea(clientArea);
+		adaptClientAreaToNewChild(child, clientArea);
+		scrollXF -= clientArea.left;
+		scrollYF -= clientArea.top;
+		scrollTo((int)(scrollXF), (int)(scrollYF));
+		virtualWidth = clientArea.width();
+		virtualHeight = clientArea.height();
+		
 		return ret;
 	}
 	
-	private void resetContentRectAccordingToChild(final View child) {
-		final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
-		child.measure(
-				MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
-				MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-		virtualWidth = child.getMeasuredWidth()
-				+ getPaddingLeft() + getPaddingRight()
-				+ lp.leftMargin + lp.rightMargin;
-		virtualHeight = child.getMeasuredHeight()
-				+ getPaddingTop() + getPaddingBottom()
-				+ lp.topMargin + lp.bottomMargin;
-	}
+	abstract protected void adaptClientAreaToNewChild(final View child, final RectF clientArea);
 	
 	
 	
@@ -201,26 +214,12 @@ public class ScallingPanningView2 extends ViewGroup {
 	
 	
 	@Override
+	abstract protected void measureChildren(int widthMeasureSpec, int heightMeasureSpec);
+	
+	
+	
+	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		
-		// Measure the child
-		if(getChildCount() > 0) {
-			final View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
-			if(child.getVisibility() != GONE) {
-				final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !?!
-				child.measure(
-						MeasureSpec.makeMeasureSpec(
-								Math.max(0, (int)virtualWidth
-										- getPaddingLeft() - getPaddingRight()
-										- lp.leftMargin - lp.rightMargin),
-								MeasureSpec.EXACTLY),
-						MeasureSpec.makeMeasureSpec(
-								Math.max(0, (int)virtualHeight
-										- getPaddingTop() - getPaddingBottom()
-										- lp.topMargin - lp.bottomMargin),
-								MeasureSpec.EXACTLY));
-			}
-		}
 		
 		// I want to be my virtual size.
 		// Apply the restrictions from parent.
@@ -231,51 +230,9 @@ public class ScallingPanningView2 extends ViewGroup {
 		setMeasuredDimension(
 				Math.max(getSuggestedMinimumWidth(), resolvedWidth),
 				Math.max(getSuggestedMinimumHeight(), resolvedHeight));
-	}
-	
-	
-	
-	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		
-		if(getChildCount() > 0) {
-			final View child = getChildAt(0);// there should be only one child; ensured by overriding addView*
-			if(child.getVisibility() != GONE) {
-				final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();// TODO .: check this cast !!!
-				final int left = getPaddingLeft() + lp.leftMargin;
-				final int top = getPaddingTop() + lp.topMargin;
-				final int width = child.getMeasuredWidth();
-				final int height = child.getMeasuredHeight();
-				child.layout(
-						left,
-						top,
-						left + width,
-						top + height);
-			}
-		}
+		measureChildren(widthMeasureSpec, heightMeasureSpec);
 		
-	}
-    
-	
-	
-	@Override
-	protected LayoutParams generateDefaultLayoutParams() {
-        return new MarginLayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-    }
-	
-	@Override
-	public LayoutParams generateLayoutParams(AttributeSet attrs) {
-		return new MarginLayoutParams(getContext(), attrs);
-	}
-	
-	@Override
-	protected LayoutParams generateLayoutParams(LayoutParams p) {
-		return new MarginLayoutParams(p);
-	}
-	
-	@Override
-	protected boolean checkLayoutParams(LayoutParams p) {
-		return p != null && p instanceof MarginLayoutParams;
 	}
 	
 	
@@ -284,7 +241,7 @@ public class ScallingPanningView2 extends ViewGroup {
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 
-		fixContentRect();
+		clampClientArea();
 		scrollTo((int)(scrollXF), (int)(scrollYF));
 	}
 	
@@ -358,7 +315,7 @@ public class ScallingPanningView2 extends ViewGroup {
 			final float focusY = detector.getFocusY();
 			
 			scaleContentRect(ratio, focusX, focusY);
-			fixContentRect();
+			clampClientArea();
 			scrollTo((int)(scrollXF), (int)(scrollYF));
 			
 			ViewCompat.postInvalidateOnAnimation(ScallingPanningView2.this);
@@ -382,7 +339,7 @@ public class ScallingPanningView2 extends ViewGroup {
 	 * 		scale up the contentRect so that some dimension fits exactly into the view and the other is smaller.
 	 * </pre>
 	 */
-	private void fixContentRect() {// TODO .: rename this !!!
+	private void clampClientArea() {
 		/* If contentRect is too small, adapt it.
 		 * 	- If only one side of contentRect is inside this view and contentRect is big enough to contain the view,
 		 * 		move contentRect so that the side is at the edge of the view.
@@ -478,6 +435,12 @@ public class ScallingPanningView2 extends ViewGroup {
 		scrollYF = ((scrollYF + originY) * ratio) - originY;
 		virtualWidth *= ratio;
 		virtualHeight *= ratio;
+	}
+	
+	
+	
+	public void getClientArea(final RectF result) {
+		result.set(0, 0, virtualWidth, virtualHeight);
 	}
 	
 	

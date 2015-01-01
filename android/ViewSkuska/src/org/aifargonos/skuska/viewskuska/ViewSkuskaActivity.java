@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class ViewSkuskaActivity extends Activity {
 	
@@ -25,12 +26,16 @@ public class ViewSkuskaActivity extends Activity {
 		mlp.leftMargin = mlp.bottomMargin = 25;
 		mlp.rightMargin = mlp.topMargin = 17;
 		
-		ScallingPanningView2 scallingPanningView = new ScallingPanningView2(this);
+		TextView textView = new TextView(this);
+		textView.setText("TextView");
+		
+		SkuskaScallingPanningLayout scallingPanningView = new SkuskaScallingPanningLayout(this);
 		scallingPanningView.setPadding(15, 10, 20, 25);
 		
 //		inception.addView(button, mlp);
 //		layout.addView(inception);
-//		scallingPanningView.addView(button, mlp);
+		scallingPanningView.addView(button, mlp);
+		scallingPanningView.addView(textView);
 		layout.addView(scallingPanningView);
 		setContentView(layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 //		setContentView(R.layout.activity_view_skuska);
