@@ -29,14 +29,19 @@ public class ViewSkuskaActivity extends Activity {
 		TextView textView = new TextView(this);
 		textView.setText("TextView");
 		
+		StoneView stoneView = new StoneView(this);
+		stoneView.setPadding(15, 10, 20, 25);
+		
 		SkuskaScallingPanningLayout scallingPanningView = new SkuskaScallingPanningLayout(this);
 		scallingPanningView.setPadding(15, 10, 20, 25);
 		
 //		inception.addView(button, mlp);
 //		layout.addView(inception);
-		scallingPanningView.addView(button, mlp);
-		scallingPanningView.addView(textView);
-		layout.addView(scallingPanningView);
+//		scallingPanningView.addView(button, mlp);
+//		scallingPanningView.addView(textView);
+//		scallingPanningView.addView(stoneView);
+//		layout.addView(scallingPanningView);
+		layout.addView(stoneView);
 		setContentView(layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 //		setContentView(R.layout.activity_view_skuska);
 	}
