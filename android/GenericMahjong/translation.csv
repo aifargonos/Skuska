@@ -1,0 +1,4 @@
+# Translation from mahjong2 to ViewSkuska
+from, to, comment
+Tile, Stone, applied
+Field, Board, applied
