@@ -1,5 +1,8 @@
 package org.aifargonos.games.genericmahjong;
 
+import org.aifargonos.games.genericmahjong.data.Coordinates;
+import org.aifargonos.games.genericmahjong.engine.Stone;
+import org.aifargonos.games.genericmahjong.gui.BoardView;
 import org.aifargonos.games.genericmahjong.gui.StoneView;
 import org.aifargonos.games.genericmahjong.skuska.SkuskaScallingPanningLayout;
 import org.aifargonos.games.genericmahjong.skuska.ViewSkuskaLayout;
@@ -41,13 +44,28 @@ public class MainActivity extends Activity {
 		SkuskaScallingPanningLayout scallingPanningView = new SkuskaScallingPanningLayout(this);
 		scallingPanningView.setPadding(15, 10, 20, 25);
 		
+		
+		StoneView stoneView1 = new StoneView(this);
+		stoneView1.setStone(new Stone(new Coordinates(-1, 0, 0)));
+		StoneView stoneView2 = new StoneView(this);
+		stoneView2.setStone(new Stone(new Coordinates( 2,-1, 0)));
+		StoneView stoneView3 = new StoneView(this);
+		stoneView3.setStone(new Stone(new Coordinates( 1, 0, 1)));
+		
+		BoardView boardView = new BoardView(this);
+		boardView.addView(stoneView1);
+		boardView.addView(stoneView2);
+		boardView.addView(stoneView3);
+		
+		
 //		inception.addView(button, mlp);
 //		layout.addView(inception);
 //		scallingPanningView.addView(button, mlp);
 //		scallingPanningView.addView(textView);
 //		scallingPanningView.addView(stoneView);
 //		layout.addView(scallingPanningView);
-		layout.addView(stoneView);
+//		layout.addView(stoneView);
+		layout.addView(boardView);
 		setContentView(layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 //		setContentView(R.layout.activity_main);
 	}

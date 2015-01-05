@@ -1,5 +1,7 @@
 package org.aifargonos.games.genericmahjong.gui;
 
+import org.aifargonos.games.genericmahjong.engine.Stone;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -53,7 +55,9 @@ public class StoneView extends View {
 	
 	
 	
-//	private int slant = SLANT_SE_TO_NW;
+	private Stone stone;
+	
+	//	private int slant = SLANT_SE_TO_NW;
 	private int slant = SLANT_NE_TO_SW;
 	private float depthRatioX = 0.2f;
 	private float depthRatioY = 0.15f;
@@ -294,6 +298,15 @@ public class StoneView extends View {
 		
 	}
 	
+	
+	
+	public Stone getStone() {
+		return stone;
+	}
+	
+	public void setStone(Stone stone) {
+		this.stone = stone;
+	}
 	
 	
 	public int getSlant() {
