@@ -129,11 +129,11 @@ public abstract class ScallingPanningView extends ViewGroup {
 		RectF clientArea = new RectF();
 		getClientArea(clientArea);
 		adaptClientAreaToNewChild(child, clientArea);
+		virtualWidth = clientArea.width();
+		virtualHeight = clientArea.height();
 		scrollXF -= clientArea.left;
 		scrollYF -= clientArea.top;
 		scrollTo((int)(scrollXF), (int)(scrollYF));
-		virtualWidth = clientArea.width();
-		virtualHeight = clientArea.height();
 	}
 	
 	@Override
@@ -143,11 +143,11 @@ public abstract class ScallingPanningView extends ViewGroup {
 		RectF clientArea = new RectF();
 		getClientArea(clientArea);
 		adaptClientAreaToNewChild(child, clientArea);
+		virtualWidth = clientArea.width();
+		virtualHeight = clientArea.height();
 		scrollXF -= clientArea.left;
 		scrollYF -= clientArea.top;
 		scrollTo((int)(scrollXF), (int)(scrollYF));
-		virtualWidth = clientArea.width();
-		virtualHeight = clientArea.height();
 		
 		return ret;
 	}
