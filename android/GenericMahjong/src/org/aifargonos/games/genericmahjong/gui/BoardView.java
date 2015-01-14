@@ -1,5 +1,7 @@
 package org.aifargonos.games.genericmahjong.gui;
 
+import java.util.Comparator;
+
 import org.aifargonos.games.genericmahjong.data.Coordinates;
 
 import android.content.Context;
@@ -10,11 +12,69 @@ import android.view.View;
 
 
 
+/**
+ * TODO [control] .: who will remove the stone from the board and who stoneView from boardView ??
+ * 
+ * @author aifargonos
+ */
 public class BoardView extends ScallingPanningView {
 	
 	
 	
-	private int stoneSlant = StoneView.SLANT_NE_TO_SW;
+	public final Comparator<StoneView> VISIBILITY_COMPARATOR = new Comparator<StoneView>() {
+		@Override
+		public int compare(StoneView lhs, StoneView rhs) {
+			
+			final Coordinates c1 = lhs.getStone().getPosition();
+			final Coordinates c2 = rhs.getStone().getPosition();
+			
+			switch(stoneSlant) {
+			case StoneView.SLANT_SE_TO_NW:
+				if(c1.z < c2.z) return -1;
+				if(c1.z > c2.z) return 1;
+				if(c1.x + c1.y < c2.x + c2.y) return -1;
+				if(c1.x + c1.y > c2.x + c2.y) return 1;
+				if(c1.x < c2.x) return -1;
+				if(c1.x > c2.x) return 1;
+				return 0;
+				
+			case StoneView.SLANT_NW_TO_SE:
+				if(c1.z < c2.z) return -1;
+				if(c1.z > c2.z) return 1;
+				if(- c1.x - c1.y < - c2.x - c2.y) return -1;
+				if(- c1.x - c1.y > - c2.x - c2.y) return 1;
+				if(c1.x < c2.x) return -1;
+				if(c1.x > c2.x) return 1;
+				return 0;
+				
+			case StoneView.SLANT_SW_TO_NE:
+				if(c1.z < c2.z) return -1;
+				if(c1.z > c2.z) return 1;
+				if(c1.y - c1.x < c2.y - c2.x) return -1;
+				if(c1.y - c1.x > c2.y - c2.x) return 1;
+				if(c1.x < c2.x) return -1;
+				if(c1.x > c2.x) return 1;
+				return 0;
+			
+			default:
+				if(c1.z < c2.z) return -1;
+				if(c1.z > c2.z) return 1;
+				if(c1.x - c1.y < c2.x - c2.y) return -1;
+				if(c1.x - c1.y > c2.x - c2.y) return 1;
+				if(c1.x < c2.x) return -1;
+				if(c1.x > c2.x) return 1;
+				return 0;
+			}
+			
+		}
+	};
+	
+	
+	
+//	private int stoneSlant = StoneView.SLANT_NE_TO_SW;
+	private int stoneSlant = StoneView.SLANT_NW_TO_SE;
+//	private int stoneSlant = StoneView.SLANT_SE_TO_NW;
+//	private int stoneSlant = StoneView.SLANT_SW_TO_NE;
 	private float stoneDepthRatioX = 0.2f;
 	private float stoneDepthRatioY = 0.15f;
 	private float stoneWidth = 80;
@@ -26,7 +86,7 @@ public class BoardView extends ScallingPanningView {
 	private StoneView topMost = null;
 	private StoneView rightMost = null;
 	private StoneView bottomMost = null;
-	// TODO .: removing children !!!
+	// TODO .: removing children! Should it adapt the clientArea ??
 	
 	/**
 	 * This is just a temporary variable,
@@ -66,7 +126,8 @@ public class BoardView extends ScallingPanningView {
 				stoneView.setDepthRatioX(stoneDepthRatioX);
 				stoneView.setDepthRatioY(stoneDepthRatioY);
 				
-				super.addView(child, index, params);
+				final int newIndex = chooseIndex(stoneView);
+				super.addView(child, newIndex, params);
 			}
 		}
 		
@@ -85,11 +146,37 @@ public class BoardView extends ScallingPanningView {
 				stoneView.setDepthRatioX(stoneDepthRatioX);
 				stoneView.setDepthRatioY(stoneDepthRatioY);
 				
-				ret = super.addViewInLayout(child, index, params, preventRequestLayout);
+				final int newIndex = chooseIndex(stoneView);
+				ret = super.addViewInLayout(child, newIndex, params, preventRequestLayout);
 			}
 		}
 		
 		return ret;
+	}
+	
+	private int chooseIndex(final StoneView newView) {
+		return chooseIndex(newView, 0, getChildCount());
+	}
+	
+	private int chooseIndex(final StoneView newView, final int start, final int end) {
+		
+		if(end <= start) {
+			return start;
+		}
+		
+		final int half = (start + end) / 2;
+		
+		final StoneView halfChild = (StoneView)getChildAt(half);// The cast is checked in addView.
+		
+		final int cmp = VISIBILITY_COMPARATOR.compare(newView, halfChild);
+		
+		if(cmp == 0) {
+			return half;
+		} else if(cmp < 0) {
+			return chooseIndex(newView, start, half);
+		} else {// cmp > 0
+			return chooseIndex(newView, half + 1, end);
+		}
 	}
 	
 	
@@ -138,13 +225,13 @@ public class BoardView extends ScallingPanningView {
 			// If left or top is lower, move origin and right or bottom.
 			if(bounds.left < coordinatesToX(leftMost.getStone().getPosition())) {
 				clientArea.right += clientArea.left - bounds.left;
-				origin.x = -bounds.left;
+				origin.x += -bounds.left;
 				
 				leftMost = stoneView;
 			}
 			if(bounds.top < coordinatesToY(topMost.getStone().getPosition())) {
 				clientArea.bottom += clientArea.top - bounds.top;
-				origin.y = -bounds.top;
+				origin.y += -bounds.top;
 				
 				topMost = stoneView;
 			}
@@ -164,7 +251,7 @@ public class BoardView extends ScallingPanningView {
 		 * Measure how much space stones need (from mostLeft/Top to mostRight/Bottom)
 		 * get ration of this and clientArea, and
 		 * scale stoneWidth in this ration.
-		 * TODO: Then some centering may be needed. ??
+		 * TODO .: Then some centering may be needed. ??
 		 */
 		final float stonesWidth = coordinatesToX(rightMost.getStone().getPosition()) -
 				coordinatesToX(leftMost.getStone().getPosition()) +
