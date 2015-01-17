@@ -110,7 +110,7 @@ public abstract class ScallingPanningView extends ViewGroup {
 		borderPaint.setStrokeWidth(0);
 		borderPaint.setStyle(Paint.Style.STROKE);
 		
-		setWillNotDraw(false);
+//		setWillNotDraw(false);
 		
 		gestureDetector = new GestureDetectorCompat(getContext(), gestureListener);
 		scaleGestureDetector = new ScaleGestureDetector(getContext(), scaleGestureListener);

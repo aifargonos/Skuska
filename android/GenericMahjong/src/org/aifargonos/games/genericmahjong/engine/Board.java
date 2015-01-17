@@ -180,12 +180,21 @@ public class Board {
 	
 	
 	
-	private Stone getNeighbour(Coordinates c, Coordinates d) {
+	private Stone getNeighbour(final Coordinates c, final Coordinates d) {
 		return board.get(c.translate(d));
 	}
 	
-	private Stone getNeighbour(Stone t, Coordinates d) {
-		return getNeighbour(t.getPosition(), d);
+	private Stone getNeighbour(final Stone stone, final Coordinates d) {
+		return getNeighbour(stone.getPosition(), d);
+	}
+	
+	
+	public boolean hasNeighbour(final Coordinates c, final Coordinates d) {
+		return board.containsKey(c.translate(d));
+	}
+	
+	public boolean hasNeighbour(final Stone stone, final Coordinates d) {
+		return hasNeighbour(stone.getPosition(), d);
 	}
 	
 	

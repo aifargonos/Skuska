@@ -3,6 +3,8 @@ package org.aifargonos.games.genericmahjong.gui;
 import java.util.Comparator;
 
 import org.aifargonos.games.genericmahjong.data.Coordinates;
+import org.aifargonos.games.genericmahjong.engine.Board;
+import org.aifargonos.games.genericmahjong.engine.Stone;
 
 import android.content.Context;
 import android.graphics.PointF;
@@ -86,6 +88,9 @@ public class BoardView extends ScallingPanningView {
 	private StoneView topMost = null;
 	private StoneView rightMost = null;
 	private StoneView bottomMost = null;
+	
+	private Board board;
+	
 	// TODO .: removing children! Should it adapt the clientArea ??
 	
 	/**
@@ -298,17 +303,72 @@ public class BoardView extends ScallingPanningView {
 		for(int i = 0; i < count; i++) {
 			final View child = getChildAt(i);
 			if(child.getVisibility() != GONE) {
+				StoneView stoneView = (StoneView)child;
 				
-				coordinatesToBounds(((StoneView)child).getStone().getPosition(), tmpRect);
+				coordinatesToBounds((stoneView).getStone().getPosition(), tmpRect);
 				child.layout(
 						(int)(tmpRect.left + 0.5f),
 						(int)(tmpRect.top + 0.5f),
 						(int)(tmpRect.right + 0.5f),
 						(int)(tmpRect.bottom + 0.5f));
 				
+				if(isCovered(stoneView) || isOutOfViewPort(tmpRect)) {
+					stoneView.setVisibility(INVISIBLE);
+				} else {
+					stoneView.setVisibility(VISIBLE);
+				}
+				
 			}
 		}
 		
+	}
+	
+	private boolean isOutOfViewPort(final RectF rect) {
+		
+		final int scrollX = getScrollX();
+		final int scrollY = getScrollY();
+		final int width = getWidth();
+		final int height = getHeight();
+		
+		return
+				rect.right < scrollX ||
+				rect.bottom < scrollY ||
+				rect.left > scrollX + width ||
+				rect.top > scrollY + height;
+	}
+	
+	private boolean isCovered(final StoneView stoneView) {
+		final Stone stone = stoneView.getStone();
+		
+		final boolean coveredFromAbove =
+				board.hasNeighbour(stone, Coordinates.ANE) &&
+				board.hasNeighbour(stone, Coordinates.ANW) &&
+				board.hasNeighbour(stone, Coordinates.ASE) &&
+				board.hasNeighbour(stone, Coordinates.ASW);
+		
+		final boolean coveredFromHorizontalSide;
+		if(stoneSlant == StoneView.SLANT_NE_TO_SW || stoneSlant == StoneView.SLANT_SE_TO_NW) {
+			coveredFromHorizontalSide = 
+					board.hasNeighbour(stone, Coordinates.EN) &&
+					board.hasNeighbour(stone, Coordinates.ES);
+		} else {
+			coveredFromHorizontalSide = 
+					board.hasNeighbour(stone, Coordinates.WN) &&
+					board.hasNeighbour(stone, Coordinates.WS);
+		}
+		
+		final boolean coveredFromVerticalSide;
+		if(stoneSlant == StoneView.SLANT_NE_TO_SW || stoneSlant == StoneView.SLANT_NW_TO_SE) {
+			coveredFromVerticalSide = 
+					board.hasNeighbour(stone, Coordinates.NE) &&
+					board.hasNeighbour(stone, Coordinates.NW);
+		} else {
+			coveredFromVerticalSide = 
+					board.hasNeighbour(stone, Coordinates.SE) &&
+					board.hasNeighbour(stone, Coordinates.SW);
+		}
+		
+		return coveredFromAbove && coveredFromHorizontalSide && coveredFromVerticalSide;
 	}
 	
 	
@@ -369,6 +429,27 @@ public class BoardView extends ScallingPanningView {
 				top + height + depthY);
 		
 		return ret;
+	}
+	
+	
+	
+	public void setBoard(final Board board) {
+		this.board = board;
+		reset();
+	}
+	
+	public void reset() {
+		
+		removeAllViews();
+		
+		// TODO .: reset clientArea
+		
+		for(Stone stone : board.getStones()) {
+			StoneView sv = new StoneView(getContext());
+			sv.setStone(stone);
+			addView(sv);
+		}
+		
 	}
 	
 	

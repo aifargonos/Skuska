@@ -72,11 +72,12 @@ public class MainActivity extends Activity {
 //		boardView.addView(stoneView1);
 //		boardView.addView(stoneView3);
 		
-		for(Stone stone : board.getStones()) {
-			StoneView sv = new StoneView(this);
-			sv.setStone(stone);
-			boardView.addView(sv);
-		}
+//		for(Stone stone : board.getStones()) {
+//			StoneView sv = new StoneView(this);
+//			sv.setStone(stone);
+//			boardView.addView(sv);
+//		}
+		boardView.setBoard(board);
 		
 		
 //		inception.addView(button, mlp);

@@ -96,6 +96,7 @@ public class StoneView extends View {
 		sideYPaint.setColor(Color.DKGRAY);
 		sideYPaint.setAntiAlias(true);
 		
+//		updatePaths();
 	}
 	
 	
@@ -105,6 +106,7 @@ public class StoneView extends View {
 		super.onDraw(canvas);
 		
 		final float halfStroke = outlinePaint.getStrokeWidth() / 2;
+		// TODO .: all this stroke business :. setClipChildren(clipChildren)
 		final float left = getPaddingLeft() + halfStroke;
 		final float top = getPaddingTop() + halfStroke;
 		final float right = getWidth() - getPaddingRight() - halfStroke;
@@ -114,7 +116,7 @@ public class StoneView extends View {
 		
 		// Draw the borders.
 		
-		prepareSideXY(left, top, right, bottom, depthX, depthY);
+		prepareSides(left, top, right, bottom, depthX, depthY);
 		canvas.drawPath(sideX, sideXPaint);
 		canvas.drawPath(sideY, sideYPaint);
 		
@@ -171,7 +173,7 @@ public class StoneView extends View {
 		
 	}
 	
-	private void prepareSideXY(final float l, final float t, final float r, final float b,
+	private void prepareSides(final float l, final float t, final float r, final float b,
 			final float depthX, final float depthY) {
 		sideX.rewind();
 		sideX.incReserve(4);
@@ -297,6 +299,37 @@ public class StoneView extends View {
 		}
 		
 	}
+//	
+//	private void updatePaths() {
+//		
+//		final float halfStroke = outlinePaint.getStrokeWidth() / 2;
+//		// TODO .: all this stroke business :. setClipChildren(clipChildren)
+//		final float left = getPaddingLeft() + halfStroke;
+//		final float top = getPaddingTop() + halfStroke;
+//		final float right = getWidth() - getPaddingRight() - halfStroke;
+//		final float bottom = getHeight() - getPaddingBottom() - halfStroke;
+//		final float depthX = (right - left) * depthRatioX;
+//		final float depthY = (top - bottom) * depthRatioY;
+//		
+//		prepareSides(left, top, right, bottom, depthX, depthY);
+//		
+//		prepareOutline(left, top, right, bottom, depthX, depthY);
+//		
+//	}
+//	
+//	@Override
+//	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+//		updatePaths();
+//		super.onSizeChanged(w, h, oldw, oldh);
+//	}
+//	
+//	@Override
+//	public void setPadding(int left, int top, int right, int bottom) {
+//		if(outlinePaint != null) {// TODO .: this is weird :-P
+//			updatePaths();
+//		}
+//		super.setPadding(left, top, right, bottom);
+//	}
 	
 	
 	
