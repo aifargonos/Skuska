@@ -16,6 +16,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 
@@ -464,8 +465,10 @@ public class BoardView extends ScallingPanningView {
 		stones = new ArrayList<Stone>(board.size());
 		final int count = getChildCount();
 		for(int i = 0; i < count; i++) {
-			// TODO .: how about adding only stones that are not covered ??
-			stones.add(((StoneView)getChildAt(i)).getStone());
+			final Stone stone = ((StoneView)getChildAt(i)).getStone();
+			if(!isCovered(stone)) {
+				stones.add(stone);
+			}
 		}
 		
 		// Removing all the views
@@ -504,11 +507,16 @@ public class BoardView extends ScallingPanningView {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		
+//		Log.i("BoardView.onDraw", "canvas.isHardwareAccelerated() = " + canvas.isHardwareAccelerated());// DEBUG
+		
 		for(Stone stone : stones) {
 			
 			coordinatesToBounds(stone.getPosition(), tmpRect);
 			
-			if(isCovered(stone) || isOutOfViewPort(tmpRect)) {
+//			if(isCovered(stone) || isOutOfViewPort(tmpRect)) {
+			// No need to check isCovered(stone), because
+			// stones contains only not covered stones ;-)
+			if(isOutOfViewPort(tmpRect)) {
 				continue;
 			}
 			
