@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -28,12 +29,14 @@ public class Board {
 	
 	
 	
-	private TreeMap<Coordinates, Stone> board;
+//	private TreeMap<Coordinates, Stone> board;
+	private Map<Coordinates, Stone> board;
 	
 	
 	
 	public Board() {
-		this.board = new TreeMap<Coordinates, Stone>();
+//		this.board = new TreeMap<Coordinates, Stone>();
+		this.board = new HashMap<Coordinates, Stone>();
 	}
 	
 	

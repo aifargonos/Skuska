@@ -95,6 +95,7 @@ public class Coordinates implements Comparable<Coordinates>, Serializable, Clone
 	@Override
 	public int hashCode() {
 		return Utils.hashCombine(Utils.hashCombine(x, y), z);
+//		return x << 16 + y << 4 + z;
 	}
 	
 	@Override
