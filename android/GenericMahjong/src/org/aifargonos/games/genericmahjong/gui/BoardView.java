@@ -319,7 +319,7 @@ public class BoardView extends ScallingPanningView {
 						(int)(tmpRect.right + 0.5f),
 						(int)(tmpRect.bottom + 0.5f));
 				
-				if(isCovered(stoneView.getStone()) || isOutOfViewPort(tmpRect)) {
+				if(isCovered(stoneView.getStone())/* || isOutOfViewPort(tmpRect)*/) {
 					stoneView.setVisibility(INVISIBLE);
 				} else {
 					stoneView.setVisibility(VISIBLE);
@@ -455,269 +455,271 @@ public class BoardView extends ScallingPanningView {
 			sv.setStone(stone);
 			addView(sv);
 		}
-		
-		/* TODO [drawing_in_BoardView]
-		 * From here on these are just temporary things for
-		 * trying out drawing everything together in BoardView.
-		 */
-		
-		// Storing stones ordered according to slant.
-		stones = new ArrayList<Stone>(board.size());
-		final int count = getChildCount();
-		for(int i = 0; i < count; i++) {
-			final Stone stone = ((StoneView)getChildAt(i)).getStone();
-			if(!isCovered(stone)) {
-				stones.add(stone);
-			}
-		}
-		
-		// Removing all the views
-		// .. they were added only to order the stones
-		// and enlarge the clientArea
-		removeAllViews();
-		
-		setWillNotDraw(false);
-		
-		outlinePaint.setStrokeWidth(3);// TODO .: maybe this can be loaded from some xml ..
-		outlinePaint.setStyle(Paint.Style.STROKE);
-		outlinePaint.setColor(Color.BLACK);
-		outlinePaint.setAntiAlias(true);
-		
-		sideXPaint.setStyle(Paint.Style.FILL);
-		sideXPaint.setColor(Color.GRAY);
-		sideXPaint.setAntiAlias(true);
-		
-		sideYPaint.setStyle(Paint.Style.FILL);
-		sideYPaint.setColor(Color.DKGRAY);
-		sideYPaint.setAntiAlias(true);
-		
-	}
-	
-	private List<Stone> stones;
-	
-	final private Paint outlinePaint = new Paint();
-	final private Paint sideXPaint = new Paint();
-	final private Paint sideYPaint = new Paint();
-	
-	final private Path outline = new Path();// TODO .: maybe these paths can be loaded from some xml ..
-	final private Path sideX = new Path();
-	final private Path sideY = new Path();
-	
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-		
-//		Log.i("BoardView.onDraw", "canvas.isHardwareAccelerated() = " + canvas.isHardwareAccelerated());// DEBUG
-		
-		for(Stone stone : stones) {
-			
-			coordinatesToBounds(stone.getPosition(), tmpRect);
-			
-//			if(isCovered(stone) || isOutOfViewPort(tmpRect)) {
-			// No need to check isCovered(stone), because
-			// stones contains only not covered stones ;-)
-			if(isOutOfViewPort(tmpRect)) {
-				continue;
-			}
-			
-			// If at least some part of the stone is visible ...
-			
-			final float halfStroke = outlinePaint.getStrokeWidth() / 2;
-			// TODO .: all this stroke business :. setClipChildren(clipChildren)
-			final float left = tmpRect.left + halfStroke;
-			final float top = tmpRect.top + halfStroke;
-			final float right = tmpRect.right - halfStroke;
-			final float bottom = tmpRect.bottom - halfStroke;
-			final float depthX = (right - left) * depthRatioX;
-			final float depthY = (top - bottom) * depthRatioY;
-			
-			// Draw the borders.
-			
-			prepareSides(left, top, right, bottom, depthX, depthY);
-			canvas.drawPath(sideX, sideXPaint);
-			canvas.drawPath(sideY, sideYPaint);
-			
-			prepareOutline(left, top, right, bottom, depthX, depthY);
-			canvas.drawPath(outline, outlinePaint);
-			
-			// TODO .: content !!!
-			
-		}
+//		
+//		// This is an old optimization. Draw caching in ScallingPanningView optimizes instead.
+//		/* TODO [drawing_in_BoardView]
+//		 * From here on these are just temporary things for
+//		 * trying out drawing everything together in BoardView.
+//		 */
+//		
+//		// Storing stones ordered according to slant.
+//		stones = new ArrayList<Stone>(board.size());
+//		final int count = getChildCount();
+//		for(int i = 0; i < count; i++) {
+//			final Stone stone = ((StoneView)getChildAt(i)).getStone();
+//			if(!isCovered(stone)) {
+//				stones.add(stone);
+//			}
+//		}
+//		
+//		// Removing all the views
+//		// .. they were added only to order the stones
+//		// and enlarge the clientArea
+//		removeAllViews();
+//		
+//		setWillNotDraw(false);
+//		
+//		outlinePaint.setStrokeWidth(3);// TODO .: maybe this can be loaded from some xml ..
+//		outlinePaint.setStyle(Paint.Style.STROKE);
+//		outlinePaint.setColor(Color.BLACK);
+//		outlinePaint.setAntiAlias(true);
+//		
+//		sideXPaint.setStyle(Paint.Style.FILL);
+//		sideXPaint.setColor(Color.GRAY);
+//		sideXPaint.setAntiAlias(true);
+//		
+//		sideYPaint.setStyle(Paint.Style.FILL);
+//		sideYPaint.setColor(Color.DKGRAY);
+//		sideYPaint.setAntiAlias(true);
 		
 	}
-	
-	private void prepareOutline(final float l, final float t, final float r, final float b,
-			final float depthX, final float depthY) {
-		outline.rewind();
-		outline.incReserve(6);
-		
-		switch(slant) {
-		case StoneView.SLANT_SE_TO_NW:
-		case StoneView.SLANT_NW_TO_SE:
-			/* 
-			 * 1---2
-			 * |    \
-			 * |     3
-			 * 6     |
-			 *  \    |
-			 *   5---4
-			 */
-			outline.moveTo(l, t);
-			outline.lineTo(r - depthX, t);
-			outline.lineTo(r, t - depthY);
-			outline.lineTo(r, b);
-			outline.lineTo(l + depthX, b);
-			outline.lineTo(l, b + depthY);
-			outline.close();
-			break;
-		
-		default:
-			/* 
-			 *   6---1
-			 *  /    |
-			 * 5     |
-			 * |     2
-			 * |    /
-			 * 4---3
-			 */
-			outline.moveTo(r, t);
-			outline.lineTo(r, b + depthY);
-			outline.lineTo(r - depthX, b);
-			outline.lineTo(l, b);
-			outline.lineTo(l, t - depthY);
-			outline.lineTo(l + depthX, t);
-			outline.close();
-			break;
-		}
-		
-	}
-	
-	private void prepareSides(final float l, final float t, final float r, final float b,
-			final float depthX, final float depthY) {
-		sideX.rewind();
-		sideX.incReserve(4);
-		sideY.rewind();
-		sideY.incReserve(4);
-		
-		switch(slant) {
-		case StoneView.SLANT_SE_TO_NW:
-			/* 
-			 *     1
-			 *     |\
-			 *     | 2
-			 *     4 |
-			 *      \|
-			 *       3
-			 */
-			sideX.moveTo(r - depthX, t);
-			sideX.lineTo(r, t - depthY);
-			sideX.lineTo(r, b);
-			sideX.lineTo(r - depthX, b + depthY);
-			sideX.close();
-			/* 
-			 * 
-			 * 
-			 * 
-			 * 1---2
-			 *  \   \
-			 *   4---3
-			 */
-			sideY.moveTo(l, b + depthY);
-			sideY.lineTo(r - depthX, b + depthY);
-			sideY.lineTo(r, b);
-			sideY.lineTo(l + depthX, b);
-			sideY.close();
-			break;
-			
-		case StoneView.SLANT_NW_TO_SE:
-			/* 
-			 * 1
-			 * |\
-			 * | 2
-			 * 4 |
-			 *  \|
-			 *   3
-			 */
-			sideX.moveTo(l, t);
-			sideX.lineTo(l + depthX, t - depthY);
-			sideX.lineTo(l + depthX, b);
-			sideX.lineTo(l, b + depthY);
-			sideX.close();
-			/* 
-			 * 1---2
-			 *  \   \
-			 *   4---3
-			 * 
-			 * 
-			 * 
-			 */
-			sideY.moveTo(l, t);
-			sideY.lineTo(r - depthX, t);
-			sideY.lineTo(r, t - depthY);
-			sideY.lineTo(l + depthX, t - depthY);
-			sideY.close();
-			break;
-			
-		case StoneView.SLANT_SW_TO_NE:
-			/* 
-			 *   1
-			 *  /|
-			 * 4 |
-			 * | 2
-			 * |/
-			 * 3
-			 */
-			sideX.moveTo(l + depthX, t);
-			sideX.lineTo(l + depthX, b + depthY);
-			sideX.lineTo(l, b);
-			sideX.lineTo(l, t - depthY);
-			sideX.close();
-			/* 
-			 * 
-			 * 
-			 * 
-			 *   4---1
-			 *  /   /
-			 * 3---2
-			 */
-			sideY.moveTo(r, b + depthY);
-			sideY.lineTo(r - depthX, b);
-			sideY.lineTo(l, b);
-			sideY.lineTo(l + depthX, b + depthY);
-			sideY.close();
-			break;
-		
-		default:
-			/* 
-			 *       1
-			 *      /|
-			 *     4 |
-			 *     | 2
-			 *     |/
-			 *     3
-			 */
-			sideX.moveTo(r, t);
-			sideX.lineTo(r, b + depthY);
-			sideX.lineTo(r - depthX, b);
-			sideX.lineTo(r - depthX, t - depthY);
-			sideX.close();
-			/* 
-			 *   4---1
-			 *  /   /
-			 * 3---2
-			 * 
-			 * 
-			 * 
-			 */
-			sideY.moveTo(r, t);
-			sideY.lineTo(r - depthX, t - depthY);
-			sideY.lineTo(l, t - depthY);
-			sideY.lineTo(l + depthX, t);
-			sideY.close();
-			break;
-		}
-		
-	}
+//	
+//	// This is an old optimization. Draw caching in ScallingPanningView optimizes instead.
+//	private List<Stone> stones;
+//	
+//	final private Paint outlinePaint = new Paint();
+//	final private Paint sideXPaint = new Paint();
+//	final private Paint sideYPaint = new Paint();
+//	
+//	final private Path outline = new Path();// TODO .: maybe these paths can be loaded from some xml ..
+//	final private Path sideX = new Path();
+//	final private Path sideY = new Path();
+//	
+//	@Override
+//	protected void onDraw(Canvas canvas) {
+//		super.onDraw(canvas);
+//		
+////		Log.i("BoardView.onDraw", "canvas.isHardwareAccelerated() = " + canvas.isHardwareAccelerated());// DEBUG
+//		
+//		for(Stone stone : stones) {
+//			
+//			coordinatesToBounds(stone.getPosition(), tmpRect);
+//			
+////			if(isCovered(stone) || isOutOfViewPort(tmpRect)) {
+//			// No need to check isCovered(stone), because
+//			// stones contains only not covered stones ;-)
+////			if(isOutOfViewPort(tmpRect)) {
+////				continue;
+////			}
+//			
+//			// If at least some part of the stone is visible ...
+//			
+//			final float halfStroke = outlinePaint.getStrokeWidth() / 2;
+//			// TODO .: all this stroke business :. setClipChildren(clipChildren)
+//			final float left = tmpRect.left + halfStroke;
+//			final float top = tmpRect.top + halfStroke;
+//			final float right = tmpRect.right - halfStroke;
+//			final float bottom = tmpRect.bottom - halfStroke;
+//			final float depthX = (right - left) * depthRatioX;
+//			final float depthY = (top - bottom) * depthRatioY;
+//			
+//			// Draw the borders.
+//			
+//			prepareSides(left, top, right, bottom, depthX, depthY);
+//			canvas.drawPath(sideX, sideXPaint);
+//			canvas.drawPath(sideY, sideYPaint);
+//			
+//			prepareOutline(left, top, right, bottom, depthX, depthY);
+//			canvas.drawPath(outline, outlinePaint);
+//			
+//			// TODO .: content !!!
+//			
+//		}
+//		
+//	}
+//	
+//	private void prepareOutline(final float l, final float t, final float r, final float b,
+//			final float depthX, final float depthY) {
+//		outline.rewind();
+//		outline.incReserve(6);
+//		
+//		switch(slant) {
+//		case StoneView.SLANT_SE_TO_NW:
+//		case StoneView.SLANT_NW_TO_SE:
+//			/* 
+//			 * 1---2
+//			 * |    \
+//			 * |     3
+//			 * 6     |
+//			 *  \    |
+//			 *   5---4
+//			 */
+//			outline.moveTo(l, t);
+//			outline.lineTo(r - depthX, t);
+//			outline.lineTo(r, t - depthY);
+//			outline.lineTo(r, b);
+//			outline.lineTo(l + depthX, b);
+//			outline.lineTo(l, b + depthY);
+//			outline.close();
+//			break;
+//		
+//		default:
+//			/* 
+//			 *   6---1
+//			 *  /    |
+//			 * 5     |
+//			 * |     2
+//			 * |    /
+//			 * 4---3
+//			 */
+//			outline.moveTo(r, t);
+//			outline.lineTo(r, b + depthY);
+//			outline.lineTo(r - depthX, b);
+//			outline.lineTo(l, b);
+//			outline.lineTo(l, t - depthY);
+//			outline.lineTo(l + depthX, t);
+//			outline.close();
+//			break;
+//		}
+//		
+//	}
+//	
+//	private void prepareSides(final float l, final float t, final float r, final float b,
+//			final float depthX, final float depthY) {
+//		sideX.rewind();
+//		sideX.incReserve(4);
+//		sideY.rewind();
+//		sideY.incReserve(4);
+//		
+//		switch(slant) {
+//		case StoneView.SLANT_SE_TO_NW:
+//			/* 
+//			 *     1
+//			 *     |\
+//			 *     | 2
+//			 *     4 |
+//			 *      \|
+//			 *       3
+//			 */
+//			sideX.moveTo(r - depthX, t);
+//			sideX.lineTo(r, t - depthY);
+//			sideX.lineTo(r, b);
+//			sideX.lineTo(r - depthX, b + depthY);
+//			sideX.close();
+//			/* 
+//			 * 
+//			 * 
+//			 * 
+//			 * 1---2
+//			 *  \   \
+//			 *   4---3
+//			 */
+//			sideY.moveTo(l, b + depthY);
+//			sideY.lineTo(r - depthX, b + depthY);
+//			sideY.lineTo(r, b);
+//			sideY.lineTo(l + depthX, b);
+//			sideY.close();
+//			break;
+//			
+//		case StoneView.SLANT_NW_TO_SE:
+//			/* 
+//			 * 1
+//			 * |\
+//			 * | 2
+//			 * 4 |
+//			 *  \|
+//			 *   3
+//			 */
+//			sideX.moveTo(l, t);
+//			sideX.lineTo(l + depthX, t - depthY);
+//			sideX.lineTo(l + depthX, b);
+//			sideX.lineTo(l, b + depthY);
+//			sideX.close();
+//			/* 
+//			 * 1---2
+//			 *  \   \
+//			 *   4---3
+//			 * 
+//			 * 
+//			 * 
+//			 */
+//			sideY.moveTo(l, t);
+//			sideY.lineTo(r - depthX, t);
+//			sideY.lineTo(r, t - depthY);
+//			sideY.lineTo(l + depthX, t - depthY);
+//			sideY.close();
+//			break;
+//			
+//		case StoneView.SLANT_SW_TO_NE:
+//			/* 
+//			 *   1
+//			 *  /|
+//			 * 4 |
+//			 * | 2
+//			 * |/
+//			 * 3
+//			 */
+//			sideX.moveTo(l + depthX, t);
+//			sideX.lineTo(l + depthX, b + depthY);
+//			sideX.lineTo(l, b);
+//			sideX.lineTo(l, t - depthY);
+//			sideX.close();
+//			/* 
+//			 * 
+//			 * 
+//			 * 
+//			 *   4---1
+//			 *  /   /
+//			 * 3---2
+//			 */
+//			sideY.moveTo(r, b + depthY);
+//			sideY.lineTo(r - depthX, b);
+//			sideY.lineTo(l, b);
+//			sideY.lineTo(l + depthX, b + depthY);
+//			sideY.close();
+//			break;
+//		
+//		default:
+//			/* 
+//			 *       1
+//			 *      /|
+//			 *     4 |
+//			 *     | 2
+//			 *     |/
+//			 *     3
+//			 */
+//			sideX.moveTo(r, t);
+//			sideX.lineTo(r, b + depthY);
+//			sideX.lineTo(r - depthX, b);
+//			sideX.lineTo(r - depthX, t - depthY);
+//			sideX.close();
+//			/* 
+//			 *   4---1
+//			 *  /   /
+//			 * 3---2
+//			 * 
+//			 * 
+//			 * 
+//			 */
+//			sideY.moveTo(r, t);
+//			sideY.lineTo(r - depthX, t - depthY);
+//			sideY.lineTo(l, t - depthY);
+//			sideY.lineTo(l + depthX, t);
+//			sideY.close();
+//			break;
+//		}
+//		
+//	}
 	
 	
 	

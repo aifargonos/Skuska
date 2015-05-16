@@ -1,12 +1,18 @@
 package org.aifargonos.games.genericmahjong.gui;
 
+import java.util.concurrent.ExecutionException;
+
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.AsyncTask;
 import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -87,6 +93,9 @@ public abstract class ScallingPanningView extends ViewGroup {
 	private final GestureDetectorCompat gestureDetector;
 	private ScaleGestureDetector scaleGestureDetector;
 	
+	private boolean isGestureInProgress = false;
+	private DrawingTask drawingTask;
+	
 	
 	
 	public ScallingPanningView(Context context) {
@@ -110,7 +119,7 @@ public abstract class ScallingPanningView extends ViewGroup {
 		borderPaint.setStrokeWidth(0);
 		borderPaint.setStyle(Paint.Style.STROKE);
 		
-//		setWillNotDraw(false);
+		setWillNotDraw(false);// The draw(Canvas) needs to be called because of drawing cache!
 		
 		gestureDetector = new GestureDetectorCompat(getContext(), gestureListener);
 		scaleGestureDetector = new ScaleGestureDetector(getContext(), scaleGestureListener);
@@ -258,7 +267,131 @@ public abstract class ScallingPanningView extends ViewGroup {
 	public boolean onTouchEvent(MotionEvent event) {
 		boolean ret = scaleGestureDetector.onTouchEvent(event);
 		ret = gestureDetector.onTouchEvent(event) || ret;
-		return super.onTouchEvent(event) || ret;
+		ret = super.onTouchEvent(event) || ret;
+    	
+    	final int action = MotionEventCompat.getActionMasked(event);
+        switch(action) {
+		case MotionEvent.ACTION_CANCEL:
+		case MotionEvent.ACTION_UP:
+			/* TODO .: I hope these are all the cases that finish a gesture.
+			 * It may happen that events come in inconsistent order, so I'll need to be clever :-P
+			 */
+			isGestureInProgress = false;
+			invalidate();// to that super.draw(Canvas) is called
+			break;
+		}
+		
+        return ret;
+	}
+	
+	
+	
+	@Override
+	public void draw(Canvas canvas) {
+		/* 
+		 * TODO !! prepare drawCache when
+		 * 	created (onAttachedToWindow(), how about detach),
+		 * 	resized
+		 * 	child changed ... pretty much each time marked dirty ...
+		 * 
+		 * like this .:
+		 * 	when draw is called
+		 * 		and a gesture is in progress
+		 * 			and drawCache is ready,
+		 * 				draw it,
+		 * 			otherwise
+		 * 				call super.
+		 * 		If no gesture is in progress,
+		 * 			call super
+		 * 			and if drawCache is ready, draw it again.
+		 * Is there a case when draw is called outside a gesture and I don't need to prepare the cache ??
+		 */
+		if(drawingTask == null) {
+			// TODO .: This is meant to be called only once at the beginning .. maybe there is a better place for it ..
+			drawingTask = new DrawingTask();
+			drawingTask.execute();
+		}
+		
+		final Bitmap drawCache = getDrawCacheIfReady();
+		
+		if(isGestureInProgress) {
+			
+			Log.d(getClass().getName(), "drawing when gesture IS in progress");
+			
+			if(drawCache == null) {
+				Log.d(getClass().getName(), "cache is NOT ready");
+				super.draw(canvas);
+			} else {
+				Log.d(getClass().getName(), "cache IS ready");
+				final int dstWidth = (int)(virtualWidth + 0.5f);
+				final int dstHeight = (int)(virtualHeight + 0.5f);
+				if(dstWidth == drawCache.getWidth() && dstHeight == drawCache.getHeight()) {
+					canvas.drawBitmap(drawCache, 0, 0, null);
+				} else {
+					final float ratioX = virtualWidth / drawCache.getWidth();
+					final float ratioY = virtualHeight / drawCache.getHeight();
+					final int saveCount = canvas.save();
+					canvas.scale(ratioX, ratioY);
+					canvas.drawBitmap(drawCache, 0, 0, null);
+					canvas.restoreToCount(saveCount);
+				}
+			}
+			
+		} else {
+			
+			Log.d(getClass().getName(), "drawing when gesture is NOT in progress");
+			
+			super.draw(canvas);
+			if(drawCache != null) {
+				Log.d(getClass().getName(), "drawing the cache");
+				drawingTask = new DrawingTask();
+				drawingTask.execute();
+			}
+			
+		}
+		
+	}
+	
+	/**
+	 * Returns the drawing cache if it is ready, otherwise returns <code>null</code>.
+	 * 
+	 * @return the drawing cache if it is ready, otherwise returns <code>null</code>.
+	 */
+	private Bitmap getDrawCacheIfReady() {
+		if(drawingTask == null || !drawingTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
+			return null;
+		}
+		
+		try {
+			return drawingTask.get();
+		} catch(InterruptedException e) {
+			// TODO What to do in a case of exception ??
+			e.printStackTrace();
+			return null;
+		} catch(ExecutionException e) {
+			// TODO What to do in a case of exception ??
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
+	
+	
+	
+	private class DrawingTask extends AsyncTask<Void, Void, Bitmap> {
+		
+		@Override
+		protected Bitmap doInBackground(Void... params) {
+			
+			Bitmap b = Bitmap.createBitmap((int)(virtualWidth + 0.5f), (int)(virtualHeight + 0.5f), Bitmap.Config.ARGB_8888);
+			Canvas c = new Canvas(b);
+			// TODO .: all children must be visible !!!
+			// TODO .: I probably need translation by scrollX/Y
+			ScallingPanningView.super.draw(c);
+			
+			return b;
+		}
+		
 	}
 	
 	
@@ -268,6 +401,7 @@ public abstract class ScallingPanningView extends ViewGroup {
 		
 		@Override
 		public boolean onDown(MotionEvent e) {
+			isGestureInProgress = true;
 			return true;
 		}
 		
@@ -305,6 +439,11 @@ public abstract class ScallingPanningView extends ViewGroup {
 	
 	private final ScaleGestureDetector.OnScaleGestureListener scaleGestureListener =
 			new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+		
+		public boolean onScaleBegin(ScaleGestureDetector detector) {
+			isGestureInProgress = true;
+			return super.onScaleBegin(detector);
+		};
 		
 		@Override
 		public boolean onScale(ScaleGestureDetector detector) {
