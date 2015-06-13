@@ -95,6 +95,7 @@ public abstract class ScallingPanningView extends ViewGroup {
 	
 	private boolean isGestureInProgress = false;
 	private DrawingTask drawingTask;
+	private Bitmap drawCache = null;
 	
 	
 	
@@ -109,15 +110,15 @@ public abstract class ScallingPanningView extends ViewGroup {
 	public ScallingPanningView(Context context, AttributeSet attrs, int defStyleAttr) {
 //		this(context, attrs, defStyleAttr, 0);
 		super(context, attrs, defStyleAttr);
-		
-		linePaint.setStrokeWidth(0);
-		linePaint.setStyle(Paint.Style.STROKE);
-		
-		textPaint.setARGB(255, 0, 0, 0);
-		textPaint.setAntiAlias(true);
-		
-		borderPaint.setStrokeWidth(0);
-		borderPaint.setStyle(Paint.Style.STROKE);
+//		
+//		linePaint.setStrokeWidth(0);
+//		linePaint.setStyle(Paint.Style.STROKE);
+//		
+//		textPaint.setARGB(255, 0, 0, 0);
+//		textPaint.setAntiAlias(true);
+//		
+//		borderPaint.setStrokeWidth(0);
+//		borderPaint.setStyle(Paint.Style.STROKE);
 		
 		setWillNotDraw(false);// The draw(Canvas) needs to be called because of drawing cache!
 		
@@ -162,63 +163,63 @@ public abstract class ScallingPanningView extends ViewGroup {
 	}
 	
 	abstract protected void adaptClientAreaToNewChild(final View child, final RectF clientArea);
-	
-	
-	
-	// TODO [layout] .: Remove these after there can be some components inside.
-	private Paint linePaint = new Paint();
-	private Paint textPaint = new Paint();
-	private Paint borderPaint = new Paint();
-	
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-		
-		final float left = getPaddingLeft();
-		final float top = getPaddingTop();
-		final float right = virtualWidth - getPaddingRight();
-		final float bottom = virtualHeight - getPaddingBottom();
-		final float height = bottom - top;
-		
-		linePaint.setStrokeWidth(height / 10);
-		
-		linePaint.setARGB(255, 0, 255, 0);
-		canvas.drawLine(
-				left, (top + bottom) / 2,
-				right, (top + bottom) / 2,
-				linePaint);
-		
-		linePaint.setARGB(255, 0, 0, 255);
-		canvas.drawLine(
-				(left + right) / 2, top,
-				(left + right) / 2, bottom,
-				linePaint);
-		
-		linePaint.setARGB(255, 255, 0, 0);
-		canvas.drawLine(
-				left, top,
-				right, bottom,
-				linePaint);
-		
-		
-		textPaint.setTextSize(height / 3);
-		
-		canvas.drawText("text",
-				left, (top + bottom) / 2,
-				textPaint);
-		
-		borderPaint.setARGB(255, 0, 255, 0);
-		canvas.drawRect(
-				0, 0,
-				virtualWidth, virtualHeight,
-				borderPaint);
-		
-		borderPaint.setARGB(255, 0, 0, 255);
-		canvas.drawRect(
-				getPaddingLeft(), getPaddingTop(),
-				virtualWidth - getPaddingRight(), virtualHeight - getPaddingBottom(),
-				borderPaint);
-	}
+//	
+//	
+//	
+//	// TODO [layout] .: Remove these after there can be some components inside.
+//	private Paint linePaint = new Paint();
+//	private Paint textPaint = new Paint();
+//	private Paint borderPaint = new Paint();
+//	
+//	@Override
+//	protected void onDraw(Canvas canvas) {
+//		super.onDraw(canvas);
+//		
+//		final float left = getPaddingLeft();
+//		final float top = getPaddingTop();
+//		final float right = virtualWidth - getPaddingRight();
+//		final float bottom = virtualHeight - getPaddingBottom();
+//		final float height = bottom - top;
+//		
+//		linePaint.setStrokeWidth(height / 10);
+//		
+//		linePaint.setARGB(255, 0, 255, 0);
+//		canvas.drawLine(
+//				left, (top + bottom) / 2,
+//				right, (top + bottom) / 2,
+//				linePaint);
+//		
+//		linePaint.setARGB(255, 0, 0, 255);
+//		canvas.drawLine(
+//				(left + right) / 2, top,
+//				(left + right) / 2, bottom,
+//				linePaint);
+//		
+//		linePaint.setARGB(255, 255, 0, 0);
+//		canvas.drawLine(
+//				left, top,
+//				right, bottom,
+//				linePaint);
+//		
+//		
+//		textPaint.setTextSize(height / 3);
+//		
+//		canvas.drawText("text",
+//				left, (top + bottom) / 2,
+//				textPaint);
+//		
+//		borderPaint.setARGB(255, 0, 255, 0);
+//		canvas.drawRect(
+//				0, 0,
+//				virtualWidth, virtualHeight,
+//				borderPaint);
+//		
+//		borderPaint.setARGB(255, 0, 0, 255);
+//		canvas.drawRect(
+//				getPaddingLeft(), getPaddingTop(),
+//				virtualWidth - getPaddingRight(), virtualHeight - getPaddingBottom(),
+//				borderPaint);
+//	}
 	
 	
 	
@@ -312,27 +313,35 @@ public abstract class ScallingPanningView extends ViewGroup {
 			drawingTask.execute();
 		}
 		
-		final Bitmap drawCache = getDrawCacheIfReady();
+		final Bitmap newDrawCache = getDrawCacheIfReady();
 		
 		if(isGestureInProgress) {
 			
 			Log.d(getClass().getName(), "drawing when gesture IS in progress");
 			
-			if(drawCache == null) {
+			if(newDrawCache == null) {
 				Log.d(getClass().getName(), "cache is NOT ready");
-				super.draw(canvas);
+				if(drawCache == null) {
+					super.draw(canvas);
+				} else {
+					if((int)(virtualWidth + 0.5f) == drawCache.getWidth() && (int)(virtualHeight + 0.5f) == drawCache.getHeight()) {
+						canvas.drawBitmap(drawCache, 0, 0, null);
+					} else {
+						final int saveCount = canvas.save();
+						canvas.scale(virtualWidth / drawCache.getWidth(), virtualHeight / drawCache.getHeight());
+						canvas.drawBitmap(drawCache, 0, 0, null);
+						canvas.restoreToCount(saveCount);
+					}
+				}
 			} else {
 				Log.d(getClass().getName(), "cache IS ready");
-				final int dstWidth = (int)(virtualWidth + 0.5f);
-				final int dstHeight = (int)(virtualHeight + 0.5f);
-				if(dstWidth == drawCache.getWidth() && dstHeight == drawCache.getHeight()) {
-					canvas.drawBitmap(drawCache, 0, 0, null);
+				drawCache = newDrawCache;
+				if((int)(virtualWidth + 0.5f) == newDrawCache.getWidth() && (int)(virtualHeight + 0.5f) == newDrawCache.getHeight()) {
+					canvas.drawBitmap(newDrawCache, 0, 0, null);
 				} else {
-					final float ratioX = virtualWidth / drawCache.getWidth();
-					final float ratioY = virtualHeight / drawCache.getHeight();
 					final int saveCount = canvas.save();
-					canvas.scale(ratioX, ratioY);
-					canvas.drawBitmap(drawCache, 0, 0, null);
+					canvas.scale(virtualWidth / newDrawCache.getWidth(), virtualHeight / newDrawCache.getHeight());
+					canvas.drawBitmap(newDrawCache, 0, 0, null);
 					canvas.restoreToCount(saveCount);
 				}
 			}
@@ -342,8 +351,9 @@ public abstract class ScallingPanningView extends ViewGroup {
 			Log.d(getClass().getName(), "drawing when gesture is NOT in progress");
 			
 			super.draw(canvas);
-			if(drawCache != null) {
+			if(newDrawCache != null) {
 				Log.d(getClass().getName(), "drawing the cache");
+				drawCache = newDrawCache;
 				drawingTask = new DrawingTask();
 				drawingTask.execute();
 			}

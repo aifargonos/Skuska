@@ -525,6 +525,7 @@ public class Board {
 			first.setContent(stoneContentsIterator.next());
 			if(!stoneContentsIterator.hasNext()) {
 				System.err.println("!!! pruser .: v stoneContents nebol parny pocet .: chyba niekde vyzsie v algoitme");
+				// TODO .: proper exception !!!
 			}
 			
 			// blocking stones

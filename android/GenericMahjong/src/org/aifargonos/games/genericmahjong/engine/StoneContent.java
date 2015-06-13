@@ -1,6 +1,6 @@
 package org.aifargonos.games.genericmahjong.engine;
 
-abstract public class StoneContent {
+public interface StoneContent {
 //	
 //	
 //	
@@ -84,7 +84,7 @@ abstract public class StoneContent {
 //		
 //	}
 	
-	abstract public boolean isAssociatedWith(StoneContent sc);
+	boolean isAssociatedWith(StoneContent sc);
 //	
 //	abstract public void draw(Graphics g, Rectangle rect);
 	

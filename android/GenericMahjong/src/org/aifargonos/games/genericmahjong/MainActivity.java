@@ -1,16 +1,24 @@
 package org.aifargonos.games.genericmahjong;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.aifargonos.games.genericmahjong.data.Coordinates;
 import org.aifargonos.games.genericmahjong.engine.Board;
+import org.aifargonos.games.genericmahjong.engine.DictStoneContent;
 import org.aifargonos.games.genericmahjong.engine.Stone;
+import org.aifargonos.games.genericmahjong.engine.StoneContent;
 import org.aifargonos.games.genericmahjong.gui.BoardView;
+import org.aifargonos.games.genericmahjong.gui.DictStoneContentDrawer;
+import org.aifargonos.games.genericmahjong.gui.StoneContentDrawer;
 import org.aifargonos.games.genericmahjong.gui.StoneView;
 import org.aifargonos.games.genericmahjong.skuska.SkuskaScallingPanningLayout;
 import org.aifargonos.games.genericmahjong.skuska.ViewSkuskaLayout;
@@ -29,6 +37,15 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
+	
+	
+	
+	public static final Map<Class<?>, StoneContentDrawer> STONE_CONTENT_DRAWERS;
+	static {
+		final Map<Class<?>, StoneContentDrawer> stoneContentDrawers = new HashMap<Class<?>, StoneContentDrawer>();
+		stoneContentDrawers.put(DictStoneContent.class, new DictStoneContentDrawer());
+		STONE_CONTENT_DRAWERS = Collections.unmodifiableMap(stoneContentDrawers);
+	}
 	
 	
 	
@@ -51,6 +68,8 @@ public class MainActivity extends Activity {
 		textView.setText("TextView");
 		
 		StoneView stoneView = new StoneView(this);
+		stoneView.setStone(new Stone(new Coordinates(-1, 0, 0)));
+		stoneView.getStone().setContent(new DictStoneContent("Tj", null));
 		stoneView.setPadding(15, 10, 20, 25);
 		
 		SkuskaScallingPanningLayout scallingPanningView = new SkuskaScallingPanningLayout(this);
@@ -58,6 +77,8 @@ public class MainActivity extends Activity {
 		
 		
 		Board board = loadBoard();
+		
+		board.generate(loadStoneContents());
 		
 		
 		StoneView stoneView1 = new StoneView(this);
@@ -87,8 +108,9 @@ public class MainActivity extends Activity {
 //		scallingPanningView.addView(stoneView);
 //		layout.addView(scallingPanningView);
 //		layout.addView(stoneView);
-		layout.addView(boardView);
-		setContentView(layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+//		layout.addView(boardView);
+//		setContentView(layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		setContentView(boardView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 //		setContentView(R.layout.activity_main);
 	}
 	
@@ -181,6 +203,77 @@ public class MainActivity extends Activity {
 		} catch(IOException e) {
 			e.printStackTrace();
 			return null;// TODO [layout_loading] proper error handling!
+		} finally {
+			if(reader != null) {
+				try {
+					reader.close();
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+	
+	
+	
+	private List<StoneContent> loadStoneContents() {
+		
+		if(!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+			return null;// TODO [content_loading] proper error handling!
+		}
+		
+		final File dir = Environment.getExternalStorageDirectory();
+		final File file = new File(new File(dir, "GenericMahjong"), "simple_contents.xml");// TODO [content_loading] parametrize
+		
+		Reader reader = null;
+		
+		try {
+			reader = new FileReader(file);
+			XmlPullParser parser = Xml.newPullParser();
+			parser.setInput(reader);
+			
+			parser.nextTag();
+			parser.require(XmlPullParser.START_TAG, "", "dictTileContents");
+			
+			final List<StoneContent> stoneContents = new ArrayList<StoneContent>();
+			
+			while(parser.nextTag() != XmlPullParser.END_TAG) {
+				parser.require(XmlPullParser.START_TAG, "", "dictTileContent");
+				
+				final String text = parser.getAttributeValue("", "text");
+				if(text == null) {
+					throw new XmlPullParserException("dictTileContent does not have attribute text! " + parser.getPositionDescription());
+				}
+				
+				final List<String> associations = new ArrayList<String>();
+				while(parser.nextTag() != XmlPullParser.END_TAG) {
+					parser.require(XmlPullParser.START_TAG, "", "association");
+					associations.add(parser.nextText());
+					parser.require(XmlPullParser.END_TAG, "", "association");
+				}
+				
+				stoneContents.add(new DictStoneContent(text, associations));
+				
+				parser.require(XmlPullParser.END_TAG, "", "dictTileContent");
+			}
+			
+			parser.require(XmlPullParser.END_TAG, "", "dictTileContents");
+			
+			return stoneContents;
+			
+		} catch(FileNotFoundException e) {
+			e.printStackTrace();
+			return null;// TODO [content_loading] proper error handling!
+		} catch(NumberFormatException e) {
+			e.printStackTrace();
+			return null;// TODO [content_loading] proper error handling!
+		} catch(XmlPullParserException e) {
+			e.printStackTrace();
+			return null;// TODO [content_loading] proper error handling!
+		} catch(IOException e) {
+			e.printStackTrace();
+			return null;// TODO [content_loading] proper error handling!
 		} finally {
 			if(reader != null) {
 				try {

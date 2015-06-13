@@ -1,12 +1,15 @@
 package org.aifargonos.games.genericmahjong.gui;
 
+import org.aifargonos.games.genericmahjong.MainActivity;
 import org.aifargonos.games.genericmahjong.engine.Stone;
+import org.aifargonos.games.genericmahjong.engine.StoneContent;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -62,13 +65,15 @@ public class StoneView extends View {
 	private float depthRatioX = 0.2f;
 	private float depthRatioY = 0.15f;
 	
-	final private Paint outlinePaint = new Paint();
-	final private Paint sideXPaint = new Paint();
-	final private Paint sideYPaint = new Paint();
+	private final Paint outlinePaint = new Paint();
+	private final Paint sideXPaint = new Paint();
+	private final Paint sideYPaint = new Paint();
+	private final Paint contentPaint = new Paint();
 	
-	final private Path outline = new Path();// TODO .: maybe these paths can be loaded from some xml ..
-	final private Path sideX = new Path();
-	final private Path sideY = new Path();
+	private final Path outline = new Path();// TODO .: maybe these paths can be loaded from some xml ..
+	private final Path sideX = new Path();
+	private final Path sideY = new Path();
+	private final RectF contentRect = new RectF();
 	
 	
 	
@@ -96,6 +101,10 @@ public class StoneView extends View {
 		sideYPaint.setColor(Color.DKGRAY);
 		sideYPaint.setAntiAlias(true);
 		
+		contentPaint.setStyle(Paint.Style.FILL);
+		contentPaint.setColor(Color.LTGRAY);
+		contentPaint.setAntiAlias(true);
+		
 //		updatePaths();
 	}
 	
@@ -117,13 +126,22 @@ public class StoneView extends View {
 		// Draw the borders.
 		
 		prepareSides(left, top, right, bottom, depthX, depthY);
+		canvas.drawRect(contentRect, contentPaint);
 		canvas.drawPath(sideX, sideXPaint);
 		canvas.drawPath(sideY, sideYPaint);
 		
 		prepareOutline(left, top, right, bottom, depthX, depthY);
 		canvas.drawPath(outline, outlinePaint);
 		
-		// TODO .: content !!!
+		// Draw the content.
+		final StoneContent stoneContent = stone.getContent();
+		if(stoneContent != null) {
+			final StoneContentDrawer stoneContentDrawer = MainActivity.STONE_CONTENT_DRAWERS.get(stoneContent.getClass());
+			if(stoneContentDrawer == null) {
+				throw new IllegalStateException("No " + StoneContentDrawer.class.getName() + " for " + stoneContent.getClass());
+			}
+			stoneContentDrawer.draw(stoneContent, canvas, contentRect.left, contentRect.top, contentRect.right, contentRect.bottom);
+		}
 		
 	}
 	
@@ -182,6 +200,10 @@ public class StoneView extends View {
 		
 		switch(slant) {
 		case SLANT_SE_TO_NW:
+			contentRect.left = l;
+			contentRect.top = t;
+			contentRect.right = r - depthX;
+			contentRect.bottom = b + depthY;
 			/* 
 			 *     1
 			 *     |\
@@ -211,6 +233,10 @@ public class StoneView extends View {
 			break;
 			
 		case SLANT_NW_TO_SE:
+			contentRect.left = l + depthX;
+			contentRect.top = t - depthY;
+			contentRect.right = r;
+			contentRect.bottom = b;
 			/* 
 			 * 1
 			 * |\
@@ -240,6 +266,10 @@ public class StoneView extends View {
 			break;
 			
 		case SLANT_SW_TO_NE:
+			contentRect.left = l + depthX;
+			contentRect.top = t;
+			contentRect.right = r;
+			contentRect.bottom = b + depthY;
 			/* 
 			 *   1
 			 *  /|
@@ -268,7 +298,11 @@ public class StoneView extends View {
 			sideY.close();
 			break;
 		
-		default:
+		default: // SLANT_NE_TO_SW
+			contentRect.left = l;
+			contentRect.top = t - depthY;
+			contentRect.right = r - depthX;
+			contentRect.bottom = b;
 			/* 
 			 *       1
 			 *      /|

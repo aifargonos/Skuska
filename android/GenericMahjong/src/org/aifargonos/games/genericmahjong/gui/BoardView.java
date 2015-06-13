@@ -441,10 +441,10 @@ public class BoardView extends ScallingPanningView {
 	
 	public void setBoard(final Board board) {
 		this.board = board;
-		reset();
+		resetStoneViews();
 	}
 	
-	public void reset() {
+	public void resetStoneViews() {
 		
 		removeAllViews();
 		
@@ -493,6 +493,18 @@ public class BoardView extends ScallingPanningView {
 //		sideYPaint.setAntiAlias(true);
 		
 	}
+	
+	
+	
+	/**
+	 * Creates views for stone contents.
+	 * Stones of the board should already have contents, which is done by {@link Board#generate(List)}.
+	 */
+	public void resetStoneContents() {
+		// TODO ...
+	}
+	
+	
 //	
 //	// This is an old optimization. Draw caching in ScallingPanningView optimizes instead.
 //	private List<Stone> stones;
