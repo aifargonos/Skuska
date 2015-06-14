@@ -9,4 +9,9 @@
         <!-- API 14 theme customizations can go here. -->
     </style>
 
+    <style name="NoActionBar" parent="AppBaseTheme">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+    
 </resources>
