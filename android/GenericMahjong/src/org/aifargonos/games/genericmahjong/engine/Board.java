@@ -1,5 +1,7 @@
 package org.aifargonos.games.genericmahjong.engine;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,11 +34,30 @@ public class Board {
 //	private TreeMap<Coordinates, Stone> board;
 	private Map<Coordinates, Stone> board;
 	
+	private Engine engine;
+	
 	
 	
 	public Board() {
 //		this.board = new TreeMap<Coordinates, Stone>();
 		this.board = new HashMap<Coordinates, Stone>();
+	}
+	
+	
+	
+	public void setEngine(final Engine engine) {
+		this.engine = engine;
+		if(engine.getBoard() != this) {
+			engine.setBoard(this);
+		}
+		for(Stone stone : board.values()) {
+			stone.setEngine(engine);
+			stone.isSelected = false;
+		}
+	}
+	
+	public Engine getEngine() {
+		return engine;
 	}
 	
 	

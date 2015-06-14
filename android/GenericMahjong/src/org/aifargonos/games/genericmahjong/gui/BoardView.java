@@ -191,6 +191,22 @@ public class BoardView extends ScallingPanningView {
 		}
 	}
 	
+	public StoneView getStoneView(final Stone stone) {
+		final int count = getChildCount();
+		for(int i = 0; i < count; i++) {
+			final View child = getChildAt(i);
+			if(child instanceof StoneView) {
+				final StoneView stoneView = (StoneView)child;
+				
+				if(stoneView.getStone() == stone) {
+					return stoneView;
+				}
+				
+			}
+		}
+		return null;
+	}
+	
 	
 	
 	@Override
@@ -493,18 +509,6 @@ public class BoardView extends ScallingPanningView {
 //		sideYPaint.setAntiAlias(true);
 		
 	}
-	
-	
-	
-	/**
-	 * Creates views for stone contents.
-	 * Stones of the board should already have contents, which is done by {@link Board#generate(List)}.
-	 */
-	public void resetStoneContents() {
-		// TODO ...
-	}
-	
-	
 //	
 //	// This is an old optimization. Draw caching in ScallingPanningView optimizes instead.
 //	private List<Stone> stones;

@@ -10,7 +10,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 
@@ -106,6 +108,17 @@ public class StoneView extends View {
 		contentPaint.setAntiAlias(true);
 		
 //		updatePaths();
+		
+		setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(stone != null) {
+					stone.click();
+					invalidate();
+				}
+			}
+		});
+		
 	}
 	
 	
@@ -126,21 +139,34 @@ public class StoneView extends View {
 		// Draw the borders.
 		
 		prepareSides(left, top, right, bottom, depthX, depthY);
-		canvas.drawRect(contentRect, contentPaint);
 		canvas.drawPath(sideX, sideXPaint);
 		canvas.drawPath(sideY, sideYPaint);
 		
 		prepareOutline(left, top, right, bottom, depthX, depthY);
 		canvas.drawPath(outline, outlinePaint);
 		
-		// Draw the content.
-		final StoneContent stoneContent = stone.getContent();
-		if(stoneContent != null) {
-			final StoneContentDrawer stoneContentDrawer = MainActivity.STONE_CONTENT_DRAWERS.get(stoneContent.getClass());
-			if(stoneContentDrawer == null) {
-				throw new IllegalStateException("No " + StoneContentDrawer.class.getName() + " for " + stoneContent.getClass());
+		if(stone != null) {
+			
+			// Draw selection.
+			
+			final int oldContentColor = contentPaint.getColor();
+			if(stone.isSelected()) {
+				contentPaint.setColor(Color.GREEN);
 			}
-			stoneContentDrawer.draw(stoneContent, canvas, contentRect.left, contentRect.top, contentRect.right, contentRect.bottom);
+			canvas.drawRect(contentRect, contentPaint);
+			contentPaint.setColor(oldContentColor);
+			
+			// Draw the content.
+			
+			final StoneContent stoneContent = stone.getContent();
+			if(stoneContent != null) {
+				final StoneContentDrawer stoneContentDrawer = MainActivity.STONE_CONTENT_DRAWERS.get(stoneContent.getClass());
+				if(stoneContentDrawer == null) {
+					throw new IllegalStateException("No " + StoneContentDrawer.class.getName() + " for " + stoneContent.getClass());
+				}
+				stoneContentDrawer.draw(stoneContent, canvas, contentRect.left, contentRect.top, contentRect.right, contentRect.bottom);
+			}
+			
 		}
 		
 	}

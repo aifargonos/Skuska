@@ -14,6 +14,8 @@ import java.util.Map;
 import org.aifargonos.games.genericmahjong.data.Coordinates;
 import org.aifargonos.games.genericmahjong.engine.Board;
 import org.aifargonos.games.genericmahjong.engine.DictStoneContent;
+import org.aifargonos.games.genericmahjong.engine.Engine;
+import org.aifargonos.games.genericmahjong.engine.EngineListener;
 import org.aifargonos.games.genericmahjong.engine.Stone;
 import org.aifargonos.games.genericmahjong.engine.StoneContent;
 import org.aifargonos.games.genericmahjong.gui.BoardView;
@@ -77,6 +79,8 @@ public class MainActivity extends Activity {
 		
 		
 		Board board = loadBoard();
+		Engine engine = new Engine();
+		board.setEngine(engine);
 		
 		board.generate(loadStoneContents());
 		
@@ -88,7 +92,7 @@ public class MainActivity extends Activity {
 		StoneView stoneView3 = new StoneView(this);
 		stoneView3.setStone(new Stone(new Coordinates( 0, 0, 1)));
 		
-		BoardView boardView = new BoardView(this);
+		final BoardView boardView = new BoardView(this);
 //		boardView.addView(stoneView2);
 //		boardView.addView(stoneView1);
 //		boardView.addView(stoneView3);
@@ -100,6 +104,28 @@ public class MainActivity extends Activity {
 //		}
 		boardView.setBoard(board);
 		
+		engine.addEngineListener(new EngineListener() {
+			@Override
+			public void stoneRemoved(final Stone stone) {
+				final StoneView stoneView = boardView.getStoneView(stone);
+				if(stoneView != null) {
+					boardView.removeView(stoneView);
+				}
+			}
+			@Override
+			public void stoneAdded(final Stone stone) {
+				StoneView stoneView = new StoneView(MainActivity.this);
+				stoneView.setStone(stone);
+				boardView.addView(boardView);
+			}
+			@Override
+			public void selectionChanged(final Stone stone) {
+				final StoneView stoneView = boardView.getStoneView(stone);
+				if(stoneView != null) {
+					stoneView.postInvalidate();
+				}
+			}
+		});
 		
 //		inception.addView(button, mlp);
 //		layout.addView(inception);

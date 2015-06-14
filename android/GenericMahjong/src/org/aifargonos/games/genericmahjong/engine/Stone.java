@@ -19,12 +19,15 @@ import org.aifargonos.games.genericmahjong.data.Coordinates;
  * 
  * @author aifargonos
  */
-public class Stone implements Comparable<Stone> {
+public class Stone {
 	
 	
 	
 	private final Coordinates position = new Coordinates();
 	private StoneContent content = null;
+	
+	private Engine engine;
+	boolean isSelected = false;
 	
 	
 	
@@ -54,14 +57,22 @@ public class Stone implements Comparable<Stone> {
 		this.position.set(position);
 	}
 	
+	public Engine getEngine() {
+		return engine;
+	}
+	void setEngine(Engine engine) {
+		this.engine = engine;
+	}
 	
-	
-	@Deprecated
-	public int compareTo(Stone tile) {
-		/* TODO .: this is not a good idea, because two stones with different content may be the same!
-		 * If I want to compare coordinates, then I should use comparator that extracts coordinates and compare them! 
-		 */
-		return position.compareTo(tile.getPosition());
+	public boolean isSelected() {
+		return isSelected;
+	}
+	public void click() {
+		if(engine == null) {
+			isSelected = !isSelected;
+		} else {
+			engine.onStoneClicked(this);
+		}
 	}
 	
 	
