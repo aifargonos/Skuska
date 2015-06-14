@@ -11,9 +11,16 @@ public class Engine {
 	
 	private Stone selectedStone = null;
 	
-	private Board board;
+	private final Board board;
 	
 	private final Collection<EngineListener> engineListeners = new ArrayList<EngineListener>();
+	
+	
+	
+	public Engine(final Board board) {
+		this.board = board;
+		board.setEngine(this);
+	}
 	
 	
 	
@@ -113,13 +120,6 @@ public class Engine {
 	}
 	
 	
-	
-	public void setBoard(final Board board) {
-		this.board = board;
-		if(board.getEngine() != this) {
-			board.setEngine(this);
-		}
-	}
 	
 	public Board getBoard() {
 		return board;

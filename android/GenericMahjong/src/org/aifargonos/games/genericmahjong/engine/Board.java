@@ -32,24 +32,23 @@ public class Board {
 	
 	
 //	private TreeMap<Coordinates, Stone> board;
-	private Map<Coordinates, Stone> board;
+	private final Set<Stone> stones;
+	private final Map<Coordinates, Stone> board;
 	
 	private Engine engine;
 	
 	
 	
 	public Board() {
+		this.stones = new HashSet<Stone>();
 //		this.board = new TreeMap<Coordinates, Stone>();
 		this.board = new HashMap<Coordinates, Stone>();
 	}
 	
 	
 	
-	public void setEngine(final Engine engine) {
+	void setEngine(final Engine engine) {
 		this.engine = engine;
-		if(engine.getBoard() != this) {
-			engine.setBoard(this);
-		}
 		for(Stone stone : board.values()) {
 			stone.setEngine(engine);
 			stone.isSelected = false;
@@ -63,7 +62,7 @@ public class Board {
 	
 	
 	public boolean isEmpty() {
-		return board.isEmpty();
+		return stones.isEmpty();
 	}
 	
 	public boolean isFree(Coordinates c) {
@@ -79,9 +78,13 @@ public class Board {
 		return true;
 	}
 	
-	public boolean put(Stone stone) {
-		Coordinates c = stone.getPosition();
-		if(!isFree(c)) return false;
+	public boolean put(final Stone stone) {
+		final Coordinates c = stone.getPosition();
+		if(!isFree(c)) {
+			return false;
+		}
+		
+		stones.add(stone);
 		
 		board.put(c, stone);
 		board.put(c.getTranslatedCopy(1, 0, 0), stone);
@@ -91,13 +94,17 @@ public class Board {
 		return true;
 	}
 	
-	public Stone get(Coordinates c) {
+	public Stone get(final Coordinates c) {
 		return board.get(c);
 	}
 	
-	public boolean remove(Stone stone) {
-		Coordinates c = stone.getPosition();
-		if(!board.containsKey(c)) return false;
+	public boolean remove(final Stone stone) {
+		final Coordinates c = stone.getPosition();
+		if(!board.containsKey(c)) {
+			return false;
+		}
+		
+		stones.remove(stone);
 		
 		board.remove(c);
 		c.x++;
@@ -110,22 +117,25 @@ public class Board {
 		return true;
 	}
 	
-	public boolean remove(Coordinates c) {
-		if(!board.containsKey(c)) return false;
+	public boolean remove(final Coordinates c) {
+		if(!board.containsKey(c)) {
+			return false;
+		}
 		return remove(board.get(c));
 	}
 	
 	public void clear() {
+		stones.clear();
 		board.clear();
 	}
 	
 	public int size() {
-		return board.size();
+		return stones.size();
 	}
 	
 	public Stone[] getStones() {
-		Stone[] ret = new Stone[board.size()];
-		return board.values().toArray(ret);
+		Stone[] ret = new Stone[stones.size()];
+		return stones.toArray(ret);
 	}
 //	
 //	

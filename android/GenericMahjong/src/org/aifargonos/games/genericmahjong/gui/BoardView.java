@@ -18,6 +18,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 
 
 
@@ -123,6 +124,7 @@ public class BoardView extends ScallingPanningView {
 	
 	public BoardView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
+		setBackgroundColor(Color.BLACK);
 	}
 	
 	
@@ -131,7 +133,7 @@ public class BoardView extends ScallingPanningView {
 	public void addView(View child, int index, LayoutParams params) {
 		
 		if(child instanceof StoneView) {
-			StoneView stoneView = (StoneView)child;
+			final StoneView stoneView = (StoneView)child;
 			if(stoneView.getStone() != null) {// TODO .: This may be replaced with LayoutParams that contain Coordinates ;-)
 				
 				stoneView.setSlant(slant);
@@ -334,12 +336,12 @@ public class BoardView extends ScallingPanningView {
 						(int)(tmpRect.top + 0.5f),
 						(int)(tmpRect.right + 0.5f),
 						(int)(tmpRect.bottom + 0.5f));
-				
-				if(isCovered(stoneView.getStone())/* || isOutOfViewPort(tmpRect)*/) {
-					stoneView.setVisibility(INVISIBLE);
-				} else {
-					stoneView.setVisibility(VISIBLE);
-				}
+//				TODO .: DEBUG
+//				if(isCovered(stoneView.getStone())/* || isOutOfViewPort(tmpRect)*/) {
+//					stoneView.setVisibility(INVISIBLE);
+//				} else {
+//					stoneView.setVisibility(VISIBLE);
+//				}
 				
 			}
 		}

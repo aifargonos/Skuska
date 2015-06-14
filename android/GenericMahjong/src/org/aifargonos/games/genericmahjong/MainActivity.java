@@ -30,9 +30,12 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.util.Xml;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.Button;
@@ -78,21 +81,32 @@ public class MainActivity extends Activity {
 		scallingPanningView.setPadding(15, 10, 20, 25);
 		
 		
-		Board board = loadBoard();
-		Engine engine = new Engine();
-		board.setEngine(engine);
+		final Board board = loadBoard();
+		final Engine engine = new Engine(board);
 		
 		board.generate(loadStoneContents());
 		
-		
-		StoneView stoneView1 = new StoneView(this);
-		stoneView1.setStone(new Stone(new Coordinates(-1, 0, 0)));
-		StoneView stoneView2 = new StoneView(this);
-		stoneView2.setStone(new Stone(new Coordinates( 1,-1, 0)));
-		StoneView stoneView3 = new StoneView(this);
-		stoneView3.setStone(new Stone(new Coordinates( 0, 0, 1)));
-		
 		final BoardView boardView = new BoardView(this);
+////		
+////		final OnClickListener onClickListener = new OnClickListener() {
+////			@Override
+////			public void onClick(View v) {
+////				// TODO Auto-generated method stub
+////				Log.d(getClass().getName(), "Click on " + v);
+////				boardView.removeView(v);
+////			}
+////		};
+//		
+//		StoneView stoneView1 = new StoneView(this);
+//		stoneView1.setStone(new Stone(new Coordinates(-1, 0, 0)));
+////		stoneView1.setOnClickListener(onClickListener);
+//		StoneView stoneView2 = new StoneView(this);
+//		stoneView2.setStone(new Stone(new Coordinates( 1,-1, 0)));
+////		stoneView2.setOnClickListener(onClickListener);
+//		StoneView stoneView3 = new StoneView(this);
+//		stoneView3.setStone(new Stone(new Coordinates( 0, 0, 1)));
+////		stoneView3.setOnClickListener(onClickListener);
+//		
 //		boardView.addView(stoneView2);
 //		boardView.addView(stoneView1);
 //		boardView.addView(stoneView3);
