@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.aifargonos.games.genericmahjong.data.Coordinates;
+import org.aifargonos.games.genericmahjong.data.DataFactory;
 import org.aifargonos.games.genericmahjong.engine.Board;
 import org.aifargonos.games.genericmahjong.engine.DictStoneContent;
 import org.aifargonos.games.genericmahjong.engine.Engine;
@@ -54,6 +55,14 @@ public class MainActivity extends Activity {
 	
 	
 	
+	public static final String BOARD_STATE = MainActivity.class.getName() + ".board";
+	
+	
+	
+	private Board board;
+	
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -73,7 +82,7 @@ public class MainActivity extends Activity {
 		textView.setText("TextView");
 		
 		StoneView stoneView = new StoneView(this);
-		stoneView.setStone(new Stone(new Coordinates(-1, 0, 0)));
+		stoneView.setStone(new Stone(DataFactory.newCoordinates(-1, 0, 0)));
 		stoneView.getStone().setContent(new DictStoneContent("Tj", null));
 		stoneView.setPadding(15, 10, 20, 25);
 		
@@ -81,10 +90,14 @@ public class MainActivity extends Activity {
 		scallingPanningView.setPadding(15, 10, 20, 25);
 		
 		
-		final Board board = loadBoard();
-		final Engine engine = new Engine(board);
+		if(savedInstanceState != null && savedInstanceState.containsKey(BOARD_STATE)) {
+			board = savedInstanceState.getParcelable(BOARD_STATE);
+		} else {
+			board = loadBoard();
+			board.generate(loadStoneContents());
+		}
 		
-		board.generate(loadStoneContents());
+		final Engine engine = new Engine(board);
 		
 		final BoardView boardView = new BoardView(this);
 ////		
@@ -154,6 +167,14 @@ public class MainActivity extends Activity {
 //		setContentView(R.layout.activity_main);
 	}
 	
+	@Override
+	protected void onSaveInstanceState(final Bundle outState) {
+		
+		outState.putParcelable(BOARD_STATE, board);
+		
+		super.onSaveInstanceState(outState);
+	}
+	
 	
 	
 	@Override
@@ -221,7 +242,7 @@ public class MainActivity extends Activity {
 				final int z = Integer.valueOf(content);
 				parser.require(XmlPullParser.END_TAG, "", "z");
 				
-				board.put(new Stone(new Coordinates(x, y, z)));
+				board.put(new Stone(DataFactory.newCoordinates(x, y, z)));
 				
 				parser.nextTag();
 				parser.require(XmlPullParser.END_TAG, "", "coordinates");

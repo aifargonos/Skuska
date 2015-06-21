@@ -1,6 +1,8 @@
 package org.aifargonos.games.genericmahjong.engine;
 
-public interface StoneContent {
+import android.os.Parcelable;
+
+public interface StoneContent extends Parcelable {
 //	
 //	
 //	

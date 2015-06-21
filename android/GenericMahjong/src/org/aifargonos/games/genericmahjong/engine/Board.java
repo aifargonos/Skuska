@@ -13,6 +13,10 @@ import java.util.Vector;
 
 import org.aifargonos.games.genericmahjong.data.Coordinates;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.Parcelable.Creator;
+
 
 /**
  * TODO
@@ -21,7 +25,7 @@ import org.aifargonos.games.genericmahjong.data.Coordinates;
  * 
  * @author aifargonos
  */
-public class Board {
+public class Board implements Parcelable {
 //	
 //	
 //	
@@ -65,16 +69,11 @@ public class Board {
 		return stones.isEmpty();
 	}
 	
-	public boolean isFree(Coordinates c) {
-		c = new Coordinates(c);
+	public boolean isFree(final Coordinates c) {
 		if(board.containsKey(c)) return false;
-		c.x++;
-		if(board.containsKey(c)) return false;
-		c.y++;
-		if(board.containsKey(c)) return false;
-		c.x--;
-		if(board.containsKey(c)) return false;
-		c.y--;
+		if(board.containsKey(c.getTranslatedCopy(1, 0, 0))) return false;
+		if(board.containsKey(c.getTranslatedCopy(1, 1, 0))) return false;
+		if(board.containsKey(c.getTranslatedCopy(0, 1, 0))) return false;
 		return true;
 	}
 	
@@ -107,12 +106,9 @@ public class Board {
 		stones.remove(stone);
 		
 		board.remove(c);
-		c.x++;
-		board.remove(c);
-		c.y++;
-		board.remove(c);
-		c.x--;
-		board.remove(c);
+		board.remove(c.getTranslatedCopy(1, 0, 0));
+		board.remove(c.getTranslatedCopy(1, 1, 0));
+		board.remove(c.getTranslatedCopy(0, 1, 0));
 		
 		return true;
 	}
@@ -215,7 +211,7 @@ public class Board {
 	
 	
 	private Stone getNeighbour(final Coordinates c, final Coordinates d) {
-		return board.get(c.translate(d));
+		return board.get(c.getTranslatedCopy(d));
 	}
 	
 	private Stone getNeighbour(final Stone stone, final Coordinates d) {
@@ -224,7 +220,7 @@ public class Board {
 	
 	
 	public boolean hasNeighbour(final Coordinates c, final Coordinates d) {
-		return board.containsKey(c.translate(d));
+		return board.containsKey(c.getTranslatedCopy(d));
 	}
 	
 	public boolean hasNeighbour(final Stone stone, final Coordinates d) {
@@ -724,6 +720,37 @@ public class Board {
 		}
 		return false;
 	}
+	
+	
+	
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+	
+	@Override
+	public void writeToParcel(final Parcel dest, final int flags) {
+		dest.writeTypedArray(stones.toArray(new Stone[stones.size()]), 0);
+	}
+	
+	public static final Creator<Board> CREATOR = new Creator<Board>() {
+		
+		@Override
+		public Board createFromParcel(final Parcel source) {
+			final Stone[] stones = source.createTypedArray(Stone.CREATOR);
+			final Board result = new Board();
+			for(Stone stone : stones) {
+				result.put(stone);
+			}
+			return result;
+		}
+		
+		@Override
+		public Board[] newArray(int size) {
+			return new Board[size];
+		}
+		
+	};
 	
 	
 	

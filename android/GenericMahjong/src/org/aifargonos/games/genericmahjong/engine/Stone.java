@@ -1,6 +1,10 @@
 package org.aifargonos.games.genericmahjong.engine;
 
 import org.aifargonos.games.genericmahjong.data.Coordinates;
+import org.aifargonos.games.genericmahjong.data.DataFactory;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * TODO
@@ -19,11 +23,11 @@ import org.aifargonos.games.genericmahjong.data.Coordinates;
  * 
  * @author aifargonos
  */
-public class Stone {
+public class Stone implements Parcelable {
 	
 	
 	
-	private final Coordinates position = new Coordinates();
+	private final Coordinates position;
 	private StoneContent content = null;
 	
 	private Engine engine;
@@ -31,10 +35,8 @@ public class Stone {
 	
 	
 	
-	public Stone() {}
-	
-	public Stone(Coordinates position) {
-		this.position.set(position);
+	public Stone(final Coordinates position) {
+		this.position = position;
 	}
 	
 	
@@ -42,19 +44,12 @@ public class Stone {
 	public StoneContent getContent() {
 		return content;
 	}
-	public void setContent(StoneContent content) {
+	public void setContent(final StoneContent content) {
 		this.content = content;
 	}
 	
 	public Coordinates getPosition() {
-		return new Coordinates(position);
-	}
-	public Coordinates getPosition(Coordinates c) {
-		c.set(position);
-		return c;
-	}
-	public void setPosition(Coordinates position) {
-		this.position.set(position);
+		return position;
 	}
 	
 	public Engine getEngine() {
@@ -81,6 +76,41 @@ public class Stone {
 	public String toString() {
 		return getClass().getSimpleName() + position;
 	}
+	
+	
+	
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+	
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(position.x());
+		dest.writeInt(position.y());
+		dest.writeInt(position.z());
+		dest.writeParcelable(content, 0);
+	}
+	
+	public static final Creator<Stone> CREATOR = new Creator<Stone>() {
+		
+		@Override
+		public Stone createFromParcel(final Parcel source) {
+			final int x = source.readInt();
+			final int y = source.readInt();
+			final int z = source.readInt();
+			final StoneContent content = source.readParcelable(null);
+			final Stone result = new Stone(DataFactory.newCoordinates(x, y, z));
+			result.setContent(content);
+			return result;
+		}
+		
+		@Override
+		public Stone[] newArray(int size) {
+			return new Stone[size];
+		}
+		
+	};
 	
 	
 	

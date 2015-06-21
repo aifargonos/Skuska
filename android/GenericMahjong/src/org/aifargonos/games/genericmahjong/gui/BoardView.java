@@ -40,39 +40,39 @@ public class BoardView extends ScallingPanningView {
 			
 			switch(slant) {
 			case StoneView.SLANT_SE_TO_NW:
-				if(c1.z < c2.z) return -1;
-				if(c1.z > c2.z) return 1;
-				if(c1.x + c1.y < c2.x + c2.y) return -1;
-				if(c1.x + c1.y > c2.x + c2.y) return 1;
-				if(c1.x < c2.x) return -1;
-				if(c1.x > c2.x) return 1;
+				if(c1.z() < c2.z()) return -1;
+				if(c1.z() > c2.z()) return 1;
+				if(c1.x() + c1.y() < c2.x() + c2.y()) return -1;
+				if(c1.x() + c1.y() > c2.x() + c2.y()) return 1;
+				if(c1.x() < c2.x()) return -1;
+				if(c1.x() > c2.x()) return 1;
 				return 0;
 				
 			case StoneView.SLANT_NW_TO_SE:
-				if(c1.z < c2.z) return -1;
-				if(c1.z > c2.z) return 1;
-				if(- c1.x - c1.y < - c2.x - c2.y) return -1;
-				if(- c1.x - c1.y > - c2.x - c2.y) return 1;
-				if(c1.x < c2.x) return -1;
-				if(c1.x > c2.x) return 1;
+				if(c1.z() < c2.z()) return -1;
+				if(c1.z() > c2.z()) return 1;
+				if(- c1.x() - c1.y() < - c2.x() - c2.y()) return -1;
+				if(- c1.x() - c1.y() > - c2.x() - c2.y()) return 1;
+				if(c1.x() < c2.x()) return -1;
+				if(c1.x() > c2.x()) return 1;
 				return 0;
 				
 			case StoneView.SLANT_SW_TO_NE:
-				if(c1.z < c2.z) return -1;
-				if(c1.z > c2.z) return 1;
-				if(c1.y - c1.x < c2.y - c2.x) return -1;
-				if(c1.y - c1.x > c2.y - c2.x) return 1;
-				if(c1.x < c2.x) return -1;
-				if(c1.x > c2.x) return 1;
+				if(c1.z() < c2.z()) return -1;
+				if(c1.z() > c2.z()) return 1;
+				if(c1.y() - c1.x() < c2.y() - c2.x()) return -1;
+				if(c1.y() - c1.x() > c2.y() - c2.x()) return 1;
+				if(c1.x() < c2.x()) return -1;
+				if(c1.x() > c2.x()) return 1;
 				return 0;
 			
 			default:
-				if(c1.z < c2.z) return -1;
-				if(c1.z > c2.z) return 1;
-				if(c1.x - c1.y < c2.x - c2.y) return -1;
-				if(c1.x - c1.y > c2.x - c2.y) return 1;
-				if(c1.x < c2.x) return -1;
-				if(c1.x > c2.x) return 1;
+				if(c1.z() < c2.z()) return -1;
+				if(c1.z() > c2.z()) return 1;
+				if(c1.x() - c1.y() < c2.x() - c2.y()) return -1;
+				if(c1.x() - c1.y() > c2.x() - c2.y()) return 1;
+				if(c1.x() < c2.x()) return -1;
+				if(c1.x() > c2.x()) return 1;
 				return 0;
 			}
 			
@@ -427,15 +427,15 @@ public class BoardView extends ScallingPanningView {
 	private float coordinatesToX(Coordinates c) {
 		final float width = getStoneWidth();
 		final float depthX = getStoneDepthX();
-		final int xDepthCorrection = (slant == StoneView.SLANT_SE_TO_NW || slant == StoneView.SLANT_NE_TO_SW) ? -(c.z + 1) : c.z;
-		return origin.x + c.x*width/2 + xDepthCorrection * depthX;
+		final int xDepthCorrection = (slant == StoneView.SLANT_SE_TO_NW || slant == StoneView.SLANT_NE_TO_SW) ? -(c.z() + 1) : c.z();
+		return origin.x + c.x()*width/2 + xDepthCorrection * depthX;
 	}
 	
 	private float coordinatesToY(Coordinates c) {
 		final float height = getStoneHeight();
 		final float depthY = getStoneDepthY();
-		final int yDepthCorrection = (slant == StoneView.SLANT_SE_TO_NW || slant == StoneView.SLANT_SW_TO_NE) ? -(c.z + 1) : c.z;
-		return origin.y + c.y*height/2 + yDepthCorrection * depthY;
+		final int yDepthCorrection = (slant == StoneView.SLANT_SE_TO_NW || slant == StoneView.SLANT_SW_TO_NE) ? -(c.z() + 1) : c.z();
+		return origin.y + c.y()*height/2 + yDepthCorrection * depthY;
 	}
 	
 	private RectF coordinatesToBounds(Coordinates c, RectF ret) {

@@ -23,6 +23,17 @@ public final class Utils {
 		return (s * (s + 1))/2 + x;
 	}
 	
+	public static int hashCombine(int... x) {
+		if(x == null || x.length == 0) {
+			return 0;
+		}
+		int ret = x[0];
+		for(int i = 1; i < x.length; i++) {
+			ret = hashCombine(ret, x[i]);
+		}
+		return ret;
+	}
+	
 	
 	
 }
