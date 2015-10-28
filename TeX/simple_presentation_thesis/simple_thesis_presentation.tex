@@ -1,5 +1,5 @@
-%\documentclass{beamer}
-\documentclass[trans,draft]{beamer} %TODO remove trans,draft
+\documentclass{beamer}
+%\documentclass[trans,draft]{beamer} %TODO remove trans,draft
 
 
 
@@ -86,7 +86,7 @@
 \AtBeginSection[]
 {
 %   \begin{frame}<beamer>{Outline}
-%     \tableofcontents[currentsection]
+%     \tableofcontents[currentsection,hideothersubsections]
 %   \end{frame}
 }
 
@@ -104,12 +104,12 @@
 \begin{frame}
 	\titlepage
 \end{frame}
-
-\begin{frame}{Outline}
+% 
+% \begin{frame}{Outline}
 % 	\tableofcontents[hideallsubsections]
-	\tableofcontents
-	% You might wish to add the option [pausesections]
-\end{frame}
+% % 	\tableofcontents
+% 	% You might wish to add the option [pausesections]
+% \end{frame}
 
 % 
 % \begin{frame}{Introduction}
@@ -132,6 +132,10 @@
 
 
 \subsection{Brief Introduction to ASP}
+
+\begin{frame}<beamer>{Outline}
+	\tableofcontents[currentsection,hideallsubsections]
+\end{frame}
 
 \begin{frame}{Declarative Problem Solving}
 	\onslide<+->
@@ -183,14 +187,14 @@
 			%			scale=0.8,%rotate=10,
 					]
 					
-					\node<2>[circle] (1) {1};
-					\node<2>[circle] (2) [right=of 1] {2};
-					\node<2>[circle] (3) [right=of 2] {3};
-					\node<2>[circle] (4) [right=of 3] {4};
+					\node<1-4>[circle] (1) {1};
+					\node<1-4>[circle] (2) [right=of 1] {2};
+					\node<1-4>[circle] (3) [right=of 2] {3};
+					\node<1-4>[circle] (4) [right=of 3] {4};
 					\node<5->[circle,fill=red!70] (1) {1};
 					\node<5->[circle,fill=blue!55] (2) [right=of 1] {2};
 					\node<5->[circle,fill=green!90!black] (3) [right=of 2] {3};
-					\node<5->[circle,fill=blue!55] (4) [right=of 3] {4};
+					\node<5->[circle,fill=red!70] (4) [right=of 3] {4};
 					
 					\draw (1) to [bend left] (3);
 					\draw (2) to (1);
@@ -218,7 +222,7 @@
 			
 			\onslide<+->
 			
-			\item Solutions: {\scriptsize$I = \set{red(1), blue(2), green(3), blue(4)}$}, \ldots
+			\item Solutions: {\scriptsize$I = \set{red(1), blue(2), green(3), red(4)}$}, \ldots
 			
 		\end{itemize}
 		
@@ -263,6 +267,10 @@
 		An interpretation $I$ is an \structure{\emph{answer set}} of a program $\prog$ iff\\
 		$I$ is a minimal model of $\activerules{I}{\prog}$.
 	\end{definition}
+	
+	\onslide+<+->
+	
+	Answer sets should contain only atoms that were explicitly derived by some rules.
 	
 \end{frame}
 
@@ -355,7 +363,7 @@
 	
 \end{frame}
 
-\begin{frame}{Why only active rules}
+\begin{frame}{Why minimisation only over active rules}
 	\onslide<+->
 	
 	\begin{itemize}
@@ -366,6 +374,8 @@
 		\end{center}
 		has minimal models \set{p}, \set{q}.
 		
+		\onslide<+->
+		
 		\item But also the program $\prog_2$:
 		\begin{center}
 			$\code{p :- not}\ \code{q.}$
@@ -374,7 +384,7 @@
 		
 		\onslide<+->
 		
-		\item Uder stable model semantics we get the following:
+		\item Uder the stable model semantics we get the following:
 		\begin{itemize}
 			\item $I_1 = \set{p}$, $\activerules{I_1}{\prog_1} = \set{\code{p:-not}\ \code{q.}}$, $I_1\models\activerules{I_1}{\prog_1}$ and $I_1$ is minimal\\
 			\onslide<+->
@@ -407,7 +417,7 @@
 		\node<2->[circle,fill=red!70] (1) {1};
 		\node<2->[circle,fill=blue!55] (2) [right=of 1] {2};
 		\node<2->[circle,fill=green!90!black] (3) [right=of 2] {3};
-		\node<2->[circle,fill=blue!55] (4) [right=of 3] {4};
+		\node<2->[circle,fill=red!70] (4) [right=of 3] {4};
 		
 		\draw (1) to [bend left] (3);
 		\draw (2) to (1);
@@ -451,24 +461,28 @@
 \section{Stepping}
 
 
-\subsection{Stepping}
+\subsection{Stepping through Answer-Set Programs}
 
-\begin{frame}{Introduction}% TODO: Adapt this frame
+\begin{frame}<beamer>{Outline}
+	\tableofcontents[currentsection,hideothersubsections]
+\end{frame}
+
+\begin{frame}{Motivation}% TODO: Adapt this frame
 	\onslide<+->
 	
 	\begin{columns}[c]
 	\column{0.7\textwidth}
 		
 		\begin{itemize}
-			\item \structure{Answer-Set Programming} (ASP) is a declarative problem-solving paradigm
 			\item Lack of development tools for ASP
 			\onslide<+->
-			\item \structure{MMDASP} @ TUW \alert{``The M\&M's of ASP''}
-% 			\begin{itemize}
-% 				\item by people in TUW, kbs
-% 				\item development, testing, debugging, \ldots
-% %	 			\item \url{www.kr.tuwien.ac.at/research/projects/mmdasp/}
-% 			\end{itemize}
+			\item \structure{MMDASP}: Methods and Methodologies for Developing Answer-Set Programs
+			\begin{itemize}
+				\item by a team within KBS at TUW
+				\item development, testing, debugging, \ldots
+%	 			\item \url{www.kr.tuwien.ac.at/research/projects/mmdasp/}
+% 				\item idea of \structure{Stepping} through ASP
+			\end{itemize}
 		\end{itemize}
 		
 	\column{0.3\textwidth}
@@ -523,7 +537,8 @@
 % 					\item Ouroboros
 % 				\end{itemize}
 				\onslide<+->
-				\item \structure{Stepping} is a gradual evaluation of a program guided by the user
+				\item Theory for \structure{Stepping} through ground ASP programs
+				\onslide<+->
 				\item Lifted to real-world languages and implemented for \sealion
 			\end{itemize}
 
@@ -558,7 +573,7 @@
 		the set $P$ of ground rules that already contributed,
 		\onslide<+->
 		\begin{itemize}
-			\item when $P$ becomes all active rules, $I$ becomes an answer-set.
+			\item when $P$ contains all active rules, $I$ becomes an answer-set.
 		\end{itemize}
 	\end{itemize}
 	
