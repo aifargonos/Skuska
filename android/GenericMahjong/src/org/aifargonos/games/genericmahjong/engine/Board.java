@@ -2,11 +2,16 @@ package org.aifargonos.games.genericmahjong.engine;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -32,6 +37,12 @@ public class Board implements Parcelable {
 //	public static final String XML_ENCODING = "UTF-8";
 //	public static final String XML_VERSION = "1.0";
 //	public static final String XML_ROOT_ELEMENT = "board";
+	
+	
+	
+	final Coordinates[] BLOCKING_NEIGHBOURS = {
+			Coordinates.ANE, Coordinates.ANW, Coordinates.ASE, Coordinates.ASW,
+			Coordinates.WN, Coordinates.WS, Coordinates.EN, Coordinates.ES};
 	
 	
 	
@@ -229,101 +240,113 @@ public class Board implements Parcelable {
 	
 	
 	
-	/**
-	 * POZOR !!! iba vertikalne blokovanie !!! neoveruje to horizontalne blokovanie !!!
-	 * TODO !!! aj tam je stone, co uz ma content, tak ho to neblokuje !!!
-	 * 
-	 * @param stone
-	 * @return
-	 */
-	private boolean blocksVertically(Stone stone) {
-		/* 
-		 * ak je pod kockou nieco bez obsahu
-		 */
-		Stone neighbour = getNeighbour(stone, Coordinates.UNE);
-		if(neighbour != null && neighbour.getContent() == null) return true;
-		neighbour = getNeighbour(stone, Coordinates.UNW);
-		if(neighbour != null && neighbour.getContent() == null) return true;
-		neighbour = getNeighbour(stone, Coordinates.USE);
-		if(neighbour != null && neighbour.getContent() == null) return true;
-		neighbour = getNeighbour(stone, Coordinates.USW);
-		if(neighbour != null && neighbour.getContent() == null) return true;
-		return false;
-	}
+//	/**
+//	 * POZOR !!! iba vertikalne blokovanie !!! neoveruje to horizontalne blokovanie !!!
+//	 * TODO !!! aj tam je stone, co uz ma content, tak ho to neblokuje !!!
+//	 * 
+//	 * @param stone
+//	 * @return
+//	 */
+//	private boolean blocksVertically(Stone stone) {
+//		/* 
+//		 * ak je pod kockou nieco bez obsahu
+//		 */
+//		Stone neighbour = getNeighbour(stone, Coordinates.UNE);
+//		if(neighbour != null && neighbour.getContent() == null) return true;
+//		neighbour = getNeighbour(stone, Coordinates.UNW);
+//		if(neighbour != null && neighbour.getContent() == null) return true;
+//		neighbour = getNeighbour(stone, Coordinates.USE);
+//		if(neighbour != null && neighbour.getContent() == null) return true;
+//		neighbour = getNeighbour(stone, Coordinates.USW);
+//		if(neighbour != null && neighbour.getContent() == null) return true;
+//		return false;
+//	}
 	
 	private boolean isContentToLeft(Set<Stone> stones) {
-		Set<Stone> newStones = new HashSet<Stone>();
-		Set<Stone> tmp = null;
+//		Set<Stone> newStones = new HashSet<Stone>();
+//		Set<Stone> tmp = null;
+//		for(Stone stone : stones) {
+//			Stone neighbour = getNeighbour(stone, Coordinates.WN);
+//			if(neighbour != null) newStones.add(neighbour);
+//			neighbour = getNeighbour(stone, Coordinates.WS);
+//			if(neighbour != null) newStones.add(neighbour);
+//		}
+//		stones.clear();
+//		while(!newStones.isEmpty()) {
+//			for(Stone stone : newStones) {
+//				if(stone.getContent() != null) return true;
+//				Stone neighbour = getNeighbour(stone, Coordinates.WN);
+//				if(neighbour != null) stones.add(neighbour);
+//				neighbour = getNeighbour(stone, Coordinates.WS);
+//				if(neighbour != null) stones.add(neighbour);
+//			}
+//			newStones.clear();
+//			tmp = newStones;
+//			newStones = stones;
+//			stones = tmp;
+//		}
+//		return false;
 		for(Stone stone : stones) {
-			Stone neighbour = getNeighbour(stone, Coordinates.WN);
-			if(neighbour != null) newStones.add(neighbour);
-			neighbour = getNeighbour(stone, Coordinates.WS);
-			if(neighbour != null) newStones.add(neighbour);
-		}
-		stones.clear();
-		while(!newStones.isEmpty()) {
-			for(Stone stone : newStones) {
-				if(stone.getContent() != null) return true;
-				Stone neighbour = getNeighbour(stone, Coordinates.WN);
-				if(neighbour != null) stones.add(neighbour);
-				neighbour = getNeighbour(stone, Coordinates.WS);
-				if(neighbour != null) stones.add(neighbour);
+			if(stone.hasContentToLeft) {
+				return true;
 			}
-			newStones.clear();
-			tmp = newStones;
-			newStones = stones;
-			stones = tmp;
 		}
 		return false;
 	}
-	private boolean blocksLeft(Stone stone) {
-		/*
-		 * ak je od laveho suseda, ktory nema obsah, vlavo nieco s obsahom
-		 */
-		Set<Stone> stones = new HashSet<Stone>();
-		Stone neighbour = getNeighbour(stone, Coordinates.WN);
-		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
-		neighbour = getNeighbour(stone, Coordinates.WS);
-		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
-		return isContentToLeft(stones);
-	}
+//	private boolean blocksLeft(Stone stone) {
+//		/*
+//		 * ak je od laveho suseda, ktory nema obsah, vlavo nieco s obsahom
+//		 */
+//		Set<Stone> stones = new HashSet<Stone>();
+//		Stone neighbour = getNeighbour(stone, Coordinates.WN);
+//		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
+//		neighbour = getNeighbour(stone, Coordinates.WS);
+//		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
+//		return isContentToLeft(stones);
+//	}
 	
 	private boolean isContentToRight(Set<Stone> stones) {
-		Set<Stone> newStones = new HashSet<Stone>();
-		Set<Stone> tmp = null;
+//		Set<Stone> newStones = new HashSet<Stone>();
+//		Set<Stone> tmp = null;
+//		for(Stone stone : stones) {
+//			Stone neighbour = getNeighbour(stone, Coordinates.EN);
+//			if(neighbour != null) newStones.add(neighbour);
+//			neighbour = getNeighbour(stone, Coordinates.ES);
+//			if(neighbour != null) newStones.add(neighbour);
+//		}
+//		stones.clear();
+//		while(!newStones.isEmpty()) {
+//			for(Stone stone : newStones) {
+//				if(stone.getContent() != null) return true;
+//				Stone neighbour = getNeighbour(stone, Coordinates.EN);
+//				if(neighbour != null) stones.add(neighbour);
+//				neighbour = getNeighbour(stone, Coordinates.ES);
+//				if(neighbour != null) stones.add(neighbour);
+//			}
+//			newStones.clear();
+//			tmp = newStones;
+//			newStones = stones;
+//			stones = tmp;
+//		}
+//		return false;
 		for(Stone stone : stones) {
-			Stone neighbour = getNeighbour(stone, Coordinates.EN);
-			if(neighbour != null) newStones.add(neighbour);
-			neighbour = getNeighbour(stone, Coordinates.ES);
-			if(neighbour != null) newStones.add(neighbour);
-		}
-		stones.clear();
-		while(!newStones.isEmpty()) {
-			for(Stone stone : newStones) {
-				if(stone.getContent() != null) return true;
-				Stone neighbour = getNeighbour(stone, Coordinates.EN);
-				if(neighbour != null) stones.add(neighbour);
-				neighbour = getNeighbour(stone, Coordinates.ES);
-				if(neighbour != null) stones.add(neighbour);
+			if(stone.hasContentToRight) {
+				return true;
 			}
-			newStones.clear();
-			tmp = newStones;
-			newStones = stones;
-			stones = tmp;
 		}
 		return false;
 	}
-	private boolean blocksRight(Stone stone) {
-		/*
-		 * ak je od praveho suseda, ktory nema obsah, vpravo nieco s obsahom
-		 */
-		Set<Stone> stones = new HashSet<Stone>();
-		Stone neighbour = getNeighbour(stone, Coordinates.EN);
-		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
-		neighbour = getNeighbour(stone, Coordinates.ES);
-		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
-		return isContentToRight(stones);
-	}
+//	private boolean blocksRight(Stone stone) {
+//		/*
+//		 * ak je od praveho suseda, ktory nema obsah, vpravo nieco s obsahom
+//		 */
+//		Set<Stone> stones = new HashSet<Stone>();
+//		Stone neighbour = getNeighbour(stone, Coordinates.EN);
+//		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
+//		neighbour = getNeighbour(stone, Coordinates.ES);
+//		if(neighbour != null && neighbour.getContent() == null) stones.add(neighbour);
+//		return isContentToRight(stones);
+//	}
 	
 	
 	
@@ -426,47 +449,134 @@ public class Board implements Parcelable {
 		}
 		
 		return weightedStones.get((int)(Math.random() * weightedStones.size()));
+//		
+//		final List<Stone> list = new ArrayList<Stone>(stones);
+//		return list.get((int)(Math.random() * list.size()));
 	}
 	
 	
 	
-	public void generate(List<StoneContent> stoneContents) {
+	private Map<StoneContent, StoneContent> getRandomAssociatedPairs(final Collection<StoneContent> stoneContents, 
+			final Random random) {
 		
+		final LinkedList<StoneContent> list = new LinkedList<StoneContent>(stoneContents);
+		Collections.shuffle(list, random);
 		
-		// random associated pairs
-		
-		int oldEnd = stoneContents.size();
-		
-		while(oldEnd > 0) {
-			
-			// first
-			StoneContent first = stoneContents.remove((int)(Math.random() * oldEnd));
-			oldEnd--;
-			if(oldEnd == 0) break;
-			
-			// second
-			int start = (int)(Math.random() * oldEnd);
+		final Map<StoneContent, StoneContent> ret = new LinkedHashMap<StoneContent, StoneContent>();
+		while(!list.isEmpty()) {
+			StoneContent first = list.pop();
 			StoneContent second = null;
-			int i = start;
-			do {
-				if(stoneContents.get(i).isAssociatedWith(first)) {
-					second = stoneContents.remove(i);
-					oldEnd--;
+			for(int secondIndex = 0; secondIndex < list.size(); secondIndex++) {
+				final StoneContent sec = list.get(secondIndex);
+				if(sec.isAssociatedWith(first)) {
+					second = sec;
+					list.remove(secondIndex);
+					break;
+				} else if(first.isAssociatedWith(sec)) {
+					second = first;
+					first = sec;
+					list.remove(secondIndex);
 					break;
 				}
-				i++;
-				if(i >= oldEnd) {
-					i = 0;
-				}
-			} while(i != start);
-			
-			// pair
+			}
 			if(second != null) {
-				stoneContents.add(first);
-				stoneContents.add(second);
+				ret.put(first, second);
+			}
+		}
+		
+		return ret;
+	}
+	
+	
+	
+	private void handleContentAddedToRight(final Stone stone, final Set<Stone> nonBlockingStones) {
+		
+		if(!stone.hasContentToRight) {
+			stone.hasContentToRight = true;
+			
+			Stone neighbour = getNeighbour(stone, Coordinates.WN);
+			if(neighbour != null) {
+				neighbour.directlyBlocks.add(stone);
+				nonBlockingStones.remove(neighbour);
+				handleContentAddedToRight(neighbour, nonBlockingStones);
+			}
+			neighbour = getNeighbour(stone, Coordinates.WS);
+			if(neighbour != null) {
+				neighbour.directlyBlocks.add(stone);
+				nonBlockingStones.remove(neighbour);
+				handleContentAddedToRight(neighbour, nonBlockingStones);
 			}
 			
 		}
+		
+	}
+	
+	private void handleContentAddedToLeft(final Stone stone, final Set<Stone> nonBlockingStones) {
+		
+		if(!stone.hasContentToLeft) {
+			stone.hasContentToLeft = true;
+			
+			Stone neighbour = getNeighbour(stone, Coordinates.EN);
+			if(neighbour != null) {
+				neighbour.directlyBlocks.add(stone);
+				nonBlockingStones.remove(neighbour);
+				handleContentAddedToLeft(neighbour, nonBlockingStones);
+			}
+			neighbour = getNeighbour(stone, Coordinates.ES);
+			if(neighbour != null) {
+				neighbour.directlyBlocks.add(stone);
+				nonBlockingStones.remove(neighbour);
+				handleContentAddedToLeft(neighbour, nonBlockingStones);
+			}
+			
+		}
+		
+	}
+	
+	
+	
+	public void generate(final List<StoneContent> stoneContents) {
+		
+		
+		final Random random = new Random();// TODO .: make this a parameter !!!
+		
+//		
+//		// random associated pairs
+//		
+//		int oldEnd = stoneContents.size();
+//		
+//		while(oldEnd > 0) {
+//			
+//			// first
+//			StoneContent first = stoneContents.remove((int)(Math.random() * oldEnd));
+//			oldEnd--;
+//			if(oldEnd == 0) break;
+//			
+//			// second
+//			int start = (int)(Math.random() * oldEnd);
+//			StoneContent second = null;
+//			int i = start;
+//			do {
+//				if(stoneContents.get(i).isAssociatedWith(first)) {
+//					second = stoneContents.remove(i);
+//					oldEnd--;
+//					break;
+//				}
+//				i++;
+//				if(i >= oldEnd) {
+//					i = 0;
+//				}
+//			} while(i != start);
+//			
+//			// pair
+//			if(second != null) {
+//				stoneContents.add(first);
+//				stoneContents.add(second);
+//			}
+//			
+//		}
+		
+		final Map<StoneContent, StoneContent> randomAssociatedPairs = getRandomAssociatedPairs(stoneContents, random);
 		
 		
 		/* 
@@ -486,29 +596,60 @@ public class Board implements Parcelable {
 		
 		// clear
 		
+		final Set<Stone> nonBlockingStones = new HashSet<Stone>();
 		for(Stone stone : board.values()) {
 			stone.setContent(null);
-		}
-		
-		// nonBlockingStones
-		
-		HashSet<Stone> nonBlockingStones = new HashSet<Stone>(board.values());
-		for(Iterator<Stone> it = nonBlockingStones.iterator(); it.hasNext();) {
-			Stone stone = it.next();
-			if(stone.getContent() != null || blocksVertically(stone) || blocksLeft(stone) || blocksRight(stone)) {
-				it.remove();
-				continue;
+			
+			stone.hasContentToRight = false;
+			stone.hasContentToLeft = false;
+			
+			stone.directlyBlocks = new HashSet<Stone>();
+			Stone neighbour = getNeighbour(stone, Coordinates.UNE);
+			if(neighbour != null) {
+				stone.directlyBlocks.add(neighbour);
+			}
+			neighbour = getNeighbour(stone, Coordinates.UNW);
+			if(neighbour != null) {
+				stone.directlyBlocks.add(neighbour);
+			}
+			neighbour = getNeighbour(stone, Coordinates.USE);
+			if(neighbour != null) {
+				stone.directlyBlocks.add(neighbour);
+			}
+			neighbour = getNeighbour(stone, Coordinates.USW);
+			if(neighbour != null) {
+				stone.directlyBlocks.add(neighbour);
+			}
+			
+			if(stone.directlyBlocks.isEmpty()) {
+				nonBlockingStones.add(stone);
 			}
 		}
+//		
+//		// nonBlockingStones
+//		
+//		HashSet<Stone> nonBlockingStones = new HashSet<Stone>(board.values());
+//		for(Iterator<Stone> it = nonBlockingStones.iterator(); it.hasNext();) {
+//			Stone stone = it.next();
+//			if(stone.getContent() != null || blocksVertically(stone) || blocksLeft(stone) || blocksRight(stone)) {
+//				it.remove();
+//				continue;
+//			}
+//		}
 		
 		// generate
 		
 //		HashMap<Stone, Integer> blockedByResults = new HashMap<Stone, Integer>(nonBlockingStones.size());
 //		Vector<Stone> maxStones = new Vector<Stone>();
-		HashSet<Stone> stones = new HashSet<Stone>();
+//		HashSet<Stone> stones = new HashSet<Stone>();
+		final Stone[] chosenStones = new Stone[2];
 		
-		Iterator<StoneContent> stoneContentsIterator = stoneContents.iterator();
-		while(stoneContentsIterator.hasNext() && !nonBlockingStones.isEmpty()) {
+//		Iterator<StoneContent> stoneContentsIterator = stoneContents.iterator();
+//		while(stoneContentsIterator.hasNext() && !nonBlockingStones.isEmpty()) {
+		for(Entry<StoneContent, StoneContent> e : randomAssociatedPairs.entrySet()) {
+			if(nonBlockingStones.isEmpty()) {
+				break;
+			}
 			
 //			System.out.println("nonBlockingStones: " + nonBlockingStones);// TODO DEBUG
 //			if(nonBlockingStones.isEmpty()) {
@@ -545,30 +686,51 @@ public class Board implements Parcelable {
 			
 //			Stone first = maxStones.get((int)(Math.random() * maxStones.size()));
 			Stone first = getRandomStone(nonBlockingStones);
+			chosenStones[0] = first;
 //			System.out.println("first: " + first);// TODO DEBUG
 			
 			// setting first content
 			
-			first.setContent(stoneContentsIterator.next());
-			if(!stoneContentsIterator.hasNext()) {
-				System.err.println("!!! pruser .: v stoneContents nebol parny pocet .: chyba niekde vyzsie v algoitme");
-				// TODO .: proper exception !!!
-			}
-			
-			// blocking stones
+//			first.setContent(stoneContentsIterator.next());
+//			if(!stoneContentsIterator.hasNext()) {
+//				System.err.println("!!! pruser .: v stoneContents nebol parny pocet .: chyba niekde vyzsie v algoitme");
+//				// TODO .: proper exception !!!
+//			}
+			first.setContent(e.getKey());
 			
 			nonBlockingStones.remove(first);
 			
-			stones.clear();
+			// Update neighbours
+			
 			Stone neighbour = getNeighbour(first, Coordinates.WN);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToRight(neighbour, nonBlockingStones);
+			}
 			neighbour = getNeighbour(first, Coordinates.WS);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToRight(neighbour, nonBlockingStones);
+			}
 			neighbour = getNeighbour(first, Coordinates.EN);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToLeft(neighbour, nonBlockingStones);
+			}
 			neighbour = getNeighbour(first, Coordinates.ES);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne
-			nonBlockingStones.removeAll(stones);
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToLeft(neighbour, nonBlockingStones);
+			}
+//			
+//			// blocking stones
+//			
+//			stones.clear();
+//			neighbour = getNeighbour(first, Coordinates.WN);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne
+//			neighbour = getNeighbour(first, Coordinates.WS);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne
+//			neighbour = getNeighbour(first, Coordinates.EN);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne
+//			neighbour = getNeighbour(first, Coordinates.ES);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne
+//			nonBlockingStones.removeAll(stones);
 //			System.out.println("nonBlockingStones: " + nonBlockingStones);// TODO DEBUG
 			
 			
@@ -600,27 +762,51 @@ public class Board implements Parcelable {
 			// random
 			
 //			Stone second = maxStones.get((int)(Math.random() * maxStones.size()));
+			if(nonBlockingStones.isEmpty()) {
+				break;
+			}
 			Stone second = getRandomStone(nonBlockingStones);
+			chosenStones[1] = second;
 //			System.out.println("second: " + second);// TODO DEBUG
 			
 			// setting second content
 			
-			second.setContent(stoneContentsIterator.next());
-			
-			// blocking stones
+//			second.setContent(stoneContentsIterator.next());
+			second.setContent(e.getValue());
 			
 			nonBlockingStones.remove(second);
 			
-			stones.clear();
+			// Update neighbours
+			
 			neighbour = getNeighbour(second, Coordinates.WN);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToRight(neighbour, nonBlockingStones);
+			}
 			neighbour = getNeighbour(second, Coordinates.WS);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToRight(neighbour, nonBlockingStones);
+			}
 			neighbour = getNeighbour(second, Coordinates.EN);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToLeft(neighbour, nonBlockingStones);
+			}
 			neighbour = getNeighbour(second, Coordinates.ES);
-			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
-			nonBlockingStones.removeAll(stones);
+			if(neighbour != null && neighbour.getContent() == null) {
+				handleContentAddedToLeft(neighbour, nonBlockingStones);
+			}
+//			
+//			// blocking stones
+//			
+//			stones.clear();
+//			neighbour = getNeighbour(second, Coordinates.WN);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
+//			neighbour = getNeighbour(second, Coordinates.WS);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToLeft(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
+//			neighbour = getNeighbour(second, Coordinates.EN);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
+//			neighbour = getNeighbour(second, Coordinates.ES);
+//			if(neighbour != null && neighbour.getContent() == null) addToBlockedBySetToRight(neighbour, stones);// TODO ide to aj horizontalne TODO staci " && neighbour.getContent() == null" iba tu ??
+//			nonBlockingStones.removeAll(stones);
 //			System.out.println("nonBlockingStones: " + nonBlockingStones);// TODO DEBUG
 			
 			/* 
@@ -631,70 +817,65 @@ public class Board implements Parcelable {
 			
 			// unblocking stones
 			
-			stones.clear();
-			neighbour = getNeighbour(first, Coordinates.ANE);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(first, Coordinates.ANW);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(first, Coordinates.ASE);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(first, Coordinates.ASW);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(first, Coordinates.WN);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(first, Coordinates.WS);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(first, Coordinates.EN);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(first, Coordinates.ES);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.ANE);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.ANW);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.ASE);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.ASW);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.WN);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.WS);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.EN);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			neighbour = getNeighbour(second, Coordinates.ES);
-			if(neighbour != null && neighbour.getContent() == null
-					&& !nonBlockingStones.contains(neighbour)) stones.add(neighbour);
-			
-//			System.out.print("unblocking: ");// TODO DEBUG
-			for(Stone stone : stones) {
-				if(!blocksVertically(stone) && !blocksLeft(stone) && !blocksRight(stone)) {
-//					System.out.print(stone + " ");// TODO DEBUG
-					nonBlockingStones.add(stone);
+//			stones.clear();
+			for(Stone chosenStone : chosenStones) {
+				for(Coordinates c : BLOCKING_NEIGHBOURS) {
+					
+					neighbour = getNeighbour(chosenStone, c);
+//					if(neighbour != null && neighbour.getContent() == null) {
+////						stones.add(neighbour);
+//						boolean blocksVertically = blocksVertically(neighbour);
+//						boolean blocksLeft = blocksLeft(neighbour);
+//						boolean blocksRight = blocksRight(neighbour);
+//						if(!blocksVertically && !blocksLeft && !blocksRight) {
+////							System.out.print(stone + " ");// TODO DEBUG
+////							stone.directlyBlocks.clear();
+//							nonBlockingStones.add(neighbour);
+//						}
+//					}
+					if(neighbour != null && neighbour.getContent() == null) {
+						neighbour.directlyBlocks.remove(chosenStone);
+						if(neighbour.directlyBlocks.isEmpty()) {
+							nonBlockingStones.add(neighbour);
+						}
+					}
+					
 				}
 			}
+//			
+////			System.out.print("unblocking: ");// TODO DEBUG
+//			for(Stone stone : stones) {
+//				if(!blocksVertically(stone) && !blocksLeft(stone) && !blocksRight(stone)) {
+////					System.out.print(stone + " ");// TODO DEBUG
+//					stone.directlyBlocks.clear();
+//					nonBlockingStones.add(stone);
+//				}
+//			}
 //			System.out.println();// TODO DEBUG
+//			for(Stone chosenStone : chosenStones) {
+//				for(Coordinates c : BLOCKING_NEIGHBOURS) {
+//					
+//					neighbour = getNeighbour(chosenStone, c);
+//					if(neighbour != null && neighbour.getContent() == null) {
+//						neighbour.directlyBlocks.remove(chosenStone);
+//						if(neighbour.directlyBlocks.isEmpty()) {
+//							nonBlockingStones.remove(neighbour);
+//						}
+//					}
+//					
+//				}
+//			}
 			
 //			System.out.println("ZMACKNI ENTR !!!");// TODO DEBUG
 //			try {
 //				System.in.read();// TODO DEBUG
 //			} catch (IOException e) {e.printStackTrace();}
 			
+		}
+		
+		// Free memory
+		for(Stone stone : this.stones) {
+			stone.directlyBlocks = null;
 		}
 		
 		// check .:

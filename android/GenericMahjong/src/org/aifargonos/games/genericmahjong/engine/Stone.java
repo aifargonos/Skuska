@@ -1,5 +1,7 @@
 package org.aifargonos.games.genericmahjong.engine;
 
+import java.util.Set;
+
 import org.aifargonos.games.genericmahjong.data.Coordinates;
 import org.aifargonos.games.genericmahjong.data.DataFactory;
 
@@ -32,6 +34,11 @@ public class Stone implements Parcelable {
 	
 	private Engine engine;
 	boolean isSelected = false;
+	
+	// Data for generator.
+	boolean hasContentToRight = false;
+	boolean hasContentToLeft = false;
+	Set<Stone> directlyBlocks;
 	
 	
 	
@@ -74,7 +81,7 @@ public class Stone implements Parcelable {
 	
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + position;
+		return getClass().getSimpleName() + "(" + position.x() + "," + position.y() + "," + position.z() + ")";
 	}
 	
 	
