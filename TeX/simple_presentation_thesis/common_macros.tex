@@ -1,0 +1,237 @@
+
+
+
+%====================================================================
+% Identifiers
+%====================================================================
+
+\newcommand{\atoms}{\ensuremath{\mathcal{A}}\xspace}
+\newcommand{\literals}{\ensuremath{\mathcal{L}}\xspace}% TODO .: this is usually a symbol for language !!!
+
+%\newcommand{\rule}{\ensuremath{r}\xspace}
+\newcommand{\prog}{\ensuremath{P}\xspace}
+\newcommand{\unfounded}{\ensuremath{\Upsilon}\xspace}
+
+\newcommand{\pospart}[1]{\ensuremath{{#1}^{+}}\xspace}
+\newcommand{\negpart}[1]{\ensuremath{{#1}^{-}}\xspace}
+
+\newcommand{\nrule}{\ensuremath{\rho}\xspace}
+\newcommand{\nprog}{\ensuremath{\Pi}\xspace}
+\newcommand{\snprog}{\ensuremath{\nprog_{\#}}\xspace}
+\newcommand{\rwprog}[1]{\ensuremath{\nprog_{#1}}\xspace}
+\newcommand{\syn}{\ensuremath{\mathcal{S}}\xspace}
+\newcommand{\sem}{\ensuremath{\mathbb{S}}\xspace}
+
+\newcommand{\sealion}{{SeaLion}\xspace}
+\newcommand{\clasp}{{Clasp}\xspace}
+\newcommand{\gringo}{{Gringo}\xspace}
+\newcommand{\dlv}{{DLV}\xspace}
+\newcommand{\lana}{{\sc{Lana}}\xspace}
+\newcommand{\aspdoc}{{ASPDoc}\xspace}
+\newcommand{\kara}{{Kara}\xspace}
+\newcommand{\ape}{{APE}\xspace}
+\newcommand{\aspide}{{ASPIDE}\xspace}
+\newcommand{\igrom}{{iGROM}\xspace}
+
+
+
+%====================================================================
+% Commands
+%====================================================================
+
+\newenvironment{myitemi}{\begin{itemize}\def\mite{\item}}{\end{itemize}}
+% \newenvironment{myitemi}{\def\mite{}}{}
+
+\makeatletter
+\newcommand{\breakinglist}[1]{%
+	\@tempcnta=0
+	\@for\@ii:=#1\do{%
+		\@insertbreakingcomma
+		{\@ii}
+	}%
+}
+\def\@insertbreakingcomma{%
+	\ifnum \@tempcnta = 0 \else , \linebreak[1] \fi
+	\advance\@tempcnta\@ne
+}
+\makeatother
+
+
+\newcommand{\set}[1]{\ensuremath{\left\{{#1}\right\}}\xspace}
+\newcommand{\bset}[1]{\ensuremath{ \{ \breakinglist{#1} \} }\xspace}
+\newcommand{\seq}[1]{\ensuremath{\left[{#1}\right]}\xspace}
+\newcommand{\tuple}[1]{\ensuremath{\langle {#1} \rangle}\xspace}
+\newcommand{\btuple}[1]{\ensuremath{\langle \breakinglist{#1} \rangle}\xspace}
+\newcommand{\prj}[2]{\ensuremath{\pi_{#1}\textit{(}{#2}\mathit{)}}\xspace}
+\newcommand{\abs}[1]{\ensuremath{|{#1}|}\xspace}
+\newcommand{\modulo}{\ensuremath{\mathrm{\ mod\ }}\xspace}
+\newcommand{\setcomp}[2]{\ensuremath{\{#1 \mid #2\}}}
+\newcommand{\multiset}[1]{\ensuremath{\dot{\{}#1\dot{\}}}}
+\newcommand{\kleene}[0]{\ensuremath{^*}}
+\newcommand{\familycomp}[2]{\ensuremath{(#1 \mid #2)}}
+
+\newcommand{\basicG}{\ensuremath{G_B}\xspace}
+% \newcommand{\ntr}[1]{\ensuremath{\texttt{<}\textit{#1}\texttt{>}}\xspace}
+% \newcommand{\ntr}[1]{\ensuremath{\texttt{<}\textit{#1}\texttt{>}}\xspace}
+\newcommand{\ntr}[1]{\texttt{<}\textit{#1}\texttt{>}}
+% \newcommand{\ntr}[1]{\ensuremath{\mathtt{<}\textit{#1}\mathtt{>}}\xspace}
+% \newcommand{\trm}[1]{\ensuremath{\texttt{``}\textit{#1}\texttt{''}}\xspace}
+\newcommand{\trm}[1]{\ntr{#1}}
+\newcommand{\opt}[1]{\ensuremath{[{#1}]}\xspace}
+\newcommand{\rpt}[1]{\ensuremath{\{{#1}\}}\xspace}
+\newcommand{\rptplus}[1]{\ensuremath{\dot\{{#1}\dot\}}\xspace}
+\newcommand{\toCFGrules}[1]{\ensuremath{\tau\textit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\Gext}[6]{\ensuremath{\textit{ext(}{#1},\linebreak[1]{#2},\linebreak[1]{#3},\linebreak[1]{#4},\linebreak[1]{#5},\linebreak[1]{#6}\mathit{)}}\xspace}
+% \newcommand{\str}[2]{\ensuremath{\text{\guillemotleft}\textit{{#1}-{#2}}\text{\guillemotright}}\xspace}
+\newcommand{\str}[2]{\ensuremath{\mathtt{\ll}\textit{{#1}-{#2}}\mathtt{\gg}}\xspace}
+% \newcommand{\code}[1]{\text{``\texttt{#1}''}}
+% \newcommand{\code}[1]{\text{"\texttt{#1}"}}
+% \newcommand{\code}[1]{\ensuremath{\texttt{``{#1}''}}\xspace}
+\newcommand{\code}[1]{\ensuremath{\texttt{\bfseries{#1}}}\xspace}
+% \newcommand{\code}[1]{\text{\guillemotleft\texttt{#1}\guillemotright}}
+\newcommand{\funid}[1]{\ensuremath{\mathit{#1}}\xspace}
+\newcommand{\algid}[1]{\mbox{\sc #1}}
+
+\newcommand{\sneg}{\ensuremath{\neg}\xspace}
+\newcommand{\naf}{\ensuremath{\mathbf{not}}\xspace}
+\newcommand{\hor}{\ensuremath{\texttt{|}}\xspace}
+\newcommand{\rif}{\ensuremath{\leftarrow}\xspace}
+
+\newcommand{\domain}[1]{\ensuremath{{D_{#1}}}\xspace}
+\newcommand{\satisfiers}[1]{\ensuremath{C_{#1}}\xspace}
+\newcommand{\head}[1]{\ensuremath{H\mathrm{(}{#1}\mathrm{)}}\xspace}
+\newcommand{\body}[1]{\ensuremath{B\mathrm{(}{#1}\mathrm{)}}\xspace}
+\newcommand{\pbody}[1]{\ensuremath{B^\mathrm{+}\mathrm{(}{#1}\mathrm{)}}\xspace}
+\newcommand{\nbody}[1]{\ensuremath{B^\mathrm{-}\mathrm{(}{#1}\mathrm{)}}\xspace}
+% \newcommand{\proj}[2]{\ensuremath{{#1}|_{#2}}}
+\newcommand{\proj}[2]{\ensuremath{{#1}\cap {#2}}}
+\newcommand{\flpred}[2]{\ensuremath{{#1}^{#2}}\xspace}
+\newcommand{\activerules}[2]{\flpred{#2}{#1}}
+
+\newcommand{\AS}[1]{\ensuremath{\mathit{AS}(#1)}\xspace}
+
+\newcommand{\stateprog}[1]{\ensuremath{{\prog}_{#1}}\xspace}
+\newcommand{\stateI}[1]{\ensuremath{{I}_{#1}}\xspace}
+% \newcommand{\statenegI}[1]{\ensuremath{{\negpart{I}}_{#1}}\xspace}
+\newcommand{\statenegI}[1]{\ensuremath{{I}^{-}_{#1}}\xspace}
+\newcommand{\stateunfounded}[1]{\ensuremath{{\unfounded}_{#1}}\xspace}
+\newcommand{\newRule}[2]{\ensuremath{\mathit{r_{\mathit{new}}(}{#1,#2}\mathit{)}}\xspace}
+
+\newcommand{\args}[1]{\ensuremath{\mathit{args(}{#1}\mathit{)}}\xspace}
+\newcommand{\vars}[1]{\ensuremath{\mathit{vars(}{#1}\mathit{)}}\xspace}
+\newcommand{\preds}[1]{\ensuremath{\mathit{ps(}{#1}\mathit{)}}\xspace}
+
+\newcommand{\lang}{\ensuremath{\mathcal{L}}\xspace}% TODO .: clash with set of literals
+\newcommand{\DP}[1]{\ensuremath{\mathit{DP(}{#1}\mathit{)}}\xspace}
+\newcommand{\SP}[1]{\ensuremath{\mathit{SP(}{#1}\mathit{)}}\xspace}
+
+\newcommand{\hu}[1]{\ensuremath{\mathrm{HU}_{#1}}\xspace}
+\newcommand{\hb}[1]{\ensuremath{\mathrm{HB}_{#1}}\xspace}
+\newcommand{\base}[2]{\ensuremath{{\mathrm{B}^{#1}_{#2}}}\xspace}
+% \newcommand{\sensitivebase}[2]{\ensuremath{{\mathrm{SB}^{#1}_{#2}}}\xspace}
+\newcommand{\sensitivebase}[2]{\ensuremath{\mathit{SB(}{#2},{#1}\mathit{)}}\xspace}
+\newcommand{\valid}[1]{\ensuremath{\mathit{OK(}{#1}\mathit{)}}\xspace}
+\newcommand{\AR}{\ensuremath{\mathit{AR}}\xspace}
+\newcommand{\signats}[1]{\ensuremath{\sigma\mathit{(}{#1}\mathit{)}}\xspace}
+% \newcommand{\signats}[2]{\ensuremath{\sigma_{#1}\mathit{(}{#2}\mathit{)}}\xspace}
+% \newcommand{\msignat}[2]{\ensuremath{\sigma^-_{#1}\mathit{(}{#2}\mathit{)}}\xspace}
+\newcommand{\ngrsym}{\ensuremath{\mathit{H}}\xspace}
+% \newcommand{\ngrsym}[1]{\ensuremath{\mathit{H(}{#1}\mathit{)}}\xspace}
+% \newcommand{\props}[1]{\ensuremath{\sigma^p\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\props}{\ensuremath{\sigma^p}\xspace}
+\newcommand{\Abase}[2]{\ensuremath{{\mathit{AB(}{#1},{#2}\mathit{)}}}\xspace}
+\newcommand{\sts}[1]{\ensuremath{{\mathit{S(}{#1}\mathit{)}}}\xspace}
+\newcommand{\GF}[1]{\ensuremath{{\mathrm{GF}_{#1}}}\xspace}
+
+\newcommand{\gvars}[1]{\ensuremath{\mathit{vars_g(}{#1}\mathit{)}}\xspace}
+\newcommand{\lvars}[1]{\ensuremath{\mathit{vars_l(}{#1}\mathit{)}}\xspace}
+\newcommand{\grn}[2]{\ensuremath{\mathit{gr_n(}{#1},{#2}\mathit{)}}\xspace}
+\newcommand{\gr}[1]{\ensuremath{\mathit{gr(}{#1}\mathit{)}}\xspace}
+\newcommand{\preI}[1]{\ensuremath{I({{#1}})}\xspace}
+\newcommand{\grsem}[2]{\ensuremath{\mathit{gr_{#1}(}{#2}\mathit{)}}\xspace}
+
+% \newcommand{\prepconst}[1]{\ensuremath{\mathit{prepconst(}{#1}\mathit{)}}\xspace}
+% \newcommand{\preplua}[1]{\ensuremath{\mathit{preplua(}{#1}\mathit{)}}\xspace}
+% \newcommand{\prepvars}[1]{\ensuremath{\mathit{prepvars(}{#1}\mathit{)}}\xspace}
+\newcommand{\prep}[1]{\ensuremath{\mathit{prep(}{#1}\mathit{)}}\xspace}
+\newcommand{\ipp}[1]{\ensuremath{\mathit{ipp(}{#1}\mathit{)}}\xspace}
+\newcommand{\eval}[2]{\ensuremath{\mathit{eval(}{#1},{#2}\mathit{)}}\xspace}
+\newcommand{\lsubs}[1]{\ensuremath{\mathit{subs}_l\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\lsub}[1]{\ensuremath{\mathit{sub}_l\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\gsubs}[1]{\ensuremath{\mathit{subs}_g\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\gsub}[1]{\ensuremath{\mathit{sub}_g\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\senssubs}[3]{\ensuremath{\sigma_s\mathit{(}{#1},{#2},{#3}\mathit{)}}\xspace}
+\newcommand{\ssubs}[3]{\ensuremath{\mathit{Subs}\mathit{(}{#1},{#2},{#3}\mathit{)}}\xspace}
+\newcommand{\condexp}[2]{\ensuremath{\mathit{condexp(}{#1},{#2}\mathit{)}}\xspace}
+\newcommand{\expc}[1]{\ensuremath{\mathit{ExpC}\mathit{(}{#1}\mathit{)}}\xspace}
+% \newcommand{\expip}[1]{\ensuremath{\algid{ExpIP}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\expip}[1]{\ensuremath{\mathit{ExpIP}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\expipD}[1]{\ensuremath{\mathit{dec}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\expipE}[1]{\ensuremath{\mathit{exp}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\intint}[2]{\ensuremath{\mathit{intint(}{#1},{#2}\mathit{)}}\xspace}
+% \newcommand{\inter}[1]{\ensuremath{\mathit{Inter(}{#1}\mathit{)}}\xspace}
+\newcommand{\inter}[2]{\ensuremath{\mathit{Eval(}{#1},{#2}\mathit{)}}\xspace}
+% \newcommand{\iinter}[2]{\ensuremath{\mathit{i(}{#1},{#2}\mathit{)}}\xspace}
+\newcommand{\iinter}[2]{\ensuremath{\mathit{e(}{#1},{#2}\mathit{)}}\xspace}
+\newcommand{\iiinter}[2]{\ensuremath{\mathit{ea(}{#1},{#2}\mathit{)}}\xspace}
+% \newcommand{\ctrans}[1]{\ensuremath{\mathit{c-trans(}{#1}\mathit{)}}\xspace}
+\newcommand{\ctrans}[1]{\ensuremath{\mathit{c(}{#1}\mathit{)}}\xspace}
+\newcommand{\conds}[1]{\ensuremath{\mathrm{C(}{#1}\mathrm{)}}\xspace}
+\newcommand{\wlist}[1]{\ensuremath{\mathrm{L(}{#1}\mathrm{)}}\xspace}
+\newcommand{\olits}[1]{\ensuremath{\mathit{o}\textit{-}\mathit{lits(}{#1}\mathit{)}}\xspace}
+\newcommand{\negolits}[1]{\ensuremath{\mathit{o}\textit{-}\mathit{lits}^-\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\wsat}[2]{\ensuremath{\mathrm{W(}{#1},{#2}\mathrm{)}}\xspace}
+\newcommand{\wwsat}[2]{\ensuremath{\mathrm{w(}{#1},{#2}\mathrm{)}}\xspace}
+\newcommand{\wcsat}[1]{\ensuremath{\mathrm{WC(}{#1}\mathrm{)}}\xspace}
+\newcommand{\adom}[1]{\ensuremath{\mathrm{D(}{#1}\mathrm{)}}\xspace}
+\newcommand{\actinst}[3]{\ensuremath{\mathit{actinst(}{#1},{#2},{#3}\mathit{)}}\xspace}
+\newcommand{\mprog}[3]{\ensuremath{\mathit{mprog(}{#1},{#2},{#3}\mathit{)}}\xspace}
+\newcommand{\decodeai}[1]{\ensuremath{\mathit{decodeai(}{#1}\mathit{)}}\xspace}
+\newcommand{\improg}[1]{\ensuremath{\nprog_{\text{int}}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\mrprog}[1]{\ensuremath{\nprog_{\text{mr}}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\gmprog}[1]{\ensuremath{\nprog_{\text{gm}}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\lmrule}[2]{\ensuremath{\nrule_{\text{lm}}\mathit{(}{#1},{#2}\mathit{)}}\xspace}
+\newcommand{\ip}[3]{\ensuremath{^{#3}ip^{#1}_{#2}}\xspace}
+
+\newcommand{\AggrF}[1]{\ensuremath{\mathrm{AF(}{#1}\mathrm{)}}\xspace}
+\newcommand{\acount}[1]{\ensuremath{\mathit{\#count(}{#1}\mathit{)}}\xspace}
+\newcommand{\asum}[1]{\ensuremath{\mathit{\#sum(}{#1}\mathit{)}}\xspace}
+\newcommand{\amin}[1]{\ensuremath{\mathit{\#min(}{#1}\mathit{)}}\xspace}
+\newcommand{\amax}[1]{\ensuremath{\mathit{\#max(}{#1}\mathit{)}}\xspace}
+\newcommand{\aavg}[1]{\ensuremath{\mathit{\#avg(}{#1}\mathit{)}}\xspace}
+
+\newcommand{\gringoG}{\ensuremath{G_G}\xspace}
+\newcommand{\Gngrsym}{\ensuremath{\ngrsym^G}\xspace}
+
+% \newcommand{\Gctrans}[2]{\ensuremath{\mathit{c}^G_{{#1}}\mathit{(}{#2}\mathit{)}}\xspace}
+\newcommand{\Gprops}{\ensuremath{\sigma^{pG}}\xspace}
+\newcommand{\Gctrans}[1]{\ensuremath{\mathit{c}^G\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\Gconst}[1]{\ensuremath{\mathit{prep}^G_c\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\Gprep}[1]{\ensuremath{\mathit{prep}^{G}\mathit{(}{#1}\mathit{)}}\xspace}
+% \newcommand{\Gsyn}[1]{\ensuremath{\syn^G\mathit{(}{#1}\mathit{)}}\xspace}
+% \newcommand{\Gsyn}{\ensuremath{\syn^G}\xspace}
+\newcommand{\Gsyn}{\ensuremath{\mathcal{G}}\xspace}
+\newcommand{\Gsem}{\ensuremath{\sem^G}\xspace}
+\newcommand{\GDP}[1]{\ensuremath{\mathit{DP}^{G}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\GSP}[1]{\ensuremath{\mathit{SP}^{G}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\Gsafe}[1]{\ensuremath{\mathit{safe}^{G}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\Gstrat}[1]{\ensuremath{\mathit{strat}^{G}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\GtypeCheck}[1]{\ensuremath{\mathit{typecheck}^{G}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\GAR}{\ensuremath{\AR^G}\xspace}
+\newcommand{\Gvalid}[1]{\ensuremath{\mathit{OK}^G\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\Ggr}[1]{\ensuremath{\mathit{gr}^{G}\mathit{(}{#1}\mathit{)}}\xspace}
+\newcommand{\Glang}{\ensuremath{\lang^G}\xspace}
+
+\newcommand{\OPx}[4]{\ensuremath{{#1}_{{#2}}^{{#3}}\mathit{(}{#4}\mathit{)}}\xspace}
+% \newcommand{\KPx}[3]{\ensuremath{\mathit{T}_{{#1}}^{{#2}}\mathit{(}{#3}\mathit{)}}\xspace}
+\newcommand{\KPx}[3]{\OPx{\mathit{T}}{#1}{#2}{#3}}
+\newcommand{\KP}[2]{\KPx{#1}{}{#2}}
+% \newcommand{\TPx}[3]{\ensuremath{\top_{{#1}}^{{#2}}\mathit{(}{#3}\mathit{)}}\xspace}
+\newcommand{\TPx}[3]{\OPx{\top}{#1}{#2}{#3}}
+% \newcommand{\TPx}[3]{\ensuremath{\mathit{T}_{{#1}}^{{#2}}\mathit{(}{#3}\mathit{)}}\xspace}
+\newcommand{\TP}[2]{\TPx{#1}{}{#2}}
+
+
+\newcommand{\stepB}[0]{``STEP''\xspace}
+
+
