@@ -265,7 +265,7 @@
 	
 	\begin{definition}[answer set]
 		An interpretation $I$ is an \structure{\emph{answer set}} of a program $\prog$ iff\\
-		$I$ is a minimal model of $\activerules{I}{\prog}$.
+		$I$ is a subset-minimal model of $\activerules{I}{\prog}$.
 	\end{definition}
 	
 	\onslide+<+->
@@ -274,7 +274,42 @@
 	
 \end{frame}
 
-\begin{frame}{Why minimal models 1/2}
+\begin{frame}{Why minimisation only over active rules}
+	\onslide<+->
+	
+	\begin{itemize}
+		\item The program $\prog_1$:
+		\begin{center}
+			$\code{p :- not}\ \code{q.}$\\
+			$\code{q :- not}\ \code{p.}$
+		\end{center}
+		has minimal models \set{p}, \set{q}.
+		\onslide<+->
+		\begin{itemize}
+			\item $I_1 = \set{p}$, $\activerules{I_1}{\prog_1} = \set{\code{p:-not}\ \code{q.}}$, $I_1\models\activerules{I_1}{\prog_1}$ and $I_1$ is minimal\\
+			\onslide<+->
+			\item $I_2 = \set{p,q}$, $\activerules{I_2}{\prog_1} = \emptyset$, $I_2\models\activerules{I_2}{\prog_1}$ but also $I_1\models\activerules{I_2}{\prog_1}$ and $I_1 \subset I_2$\\
+		\end{itemize}
+		
+		\onslide<+->
+		
+		\item But also the program $\prog_2$:
+		\begin{center}
+			$\code{p :- not}\ \code{q.}$
+		\end{center}
+		has minimal models \set{p}, {\color{red}\set{q}}.
+		
+		\onslide<+->
+		
+		\begin{itemize}
+			\item $I_3 = \set{q}$, $\activerules{I_3}{\prog_2} = \emptyset$, $I_3\models\activerules{I_3}{\prog_2}$ but also $\emptyset\models\activerules{I_3}{\prog_2}$ and $\emptyset \subset I_3$
+		\end{itemize}
+		
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Comparison to classical logic 1/2}
 	\onslide<+->
 	
 	\begin{itemize}
@@ -323,7 +358,7 @@
 	
 \end{frame}
 
-\begin{frame}{Why minimal models 2/2}
+\begin{frame}{Comparison to classical logic 2/2}
 	\onslide<+->
 	
 	\begin{itemize}
@@ -354,44 +389,10 @@
 				\end{array}$
 			\end{center}
 			that admits models with $r(1)$ and $r(2)$.
-		
-		\onslide<+->
-		
-		\item We want \structure{minimal models}.
-		
-	\end{itemize}
-	
-\end{frame}
-
-\begin{frame}{Why minimisation only over active rules}
-	\onslide<+->
-	
-	\begin{itemize}
-		\item The program $\prog_1$:
-		\begin{center}
-			$\code{p :- not}\ \code{q.}$\\
-			$\code{q :- not}\ \code{p.}$
-		\end{center}
-		has minimal models \set{p}, \set{q}.
-		
-		\onslide<+->
-		
-		\item But also the program $\prog_2$:
-		\begin{center}
-			$\code{p :- not}\ \code{q.}$
-		\end{center}
-		has minimal models \set{p}, {\color{red}\set{q}}.
-		
-		\onslide<+->
-		
-		\item Uder the stable model semantics we get the following:
-		\begin{itemize}
-			\item $I_1 = \set{p}$, $\activerules{I_1}{\prog_1} = \set{\code{p:-not}\ \code{q.}}$, $I_1\models\activerules{I_1}{\prog_1}$ and $I_1$ is minimal\\
-			\onslide<+->
-			\item $I_2 = \set{p,q}$, $\activerules{I_2}{\prog_1} = \emptyset$, $I_2\models\activerules{I_2}{\prog_1}$ but so does $I_1 \subset I_2$\\
-			\onslide<+->
-			\item $I_3 = \set{q}$, $\activerules{I_3}{\prog_2} = \emptyset$, $I_3\models\activerules{I_3}{\prog_2}$ but so does $\emptyset \subset I_3$
-		\end{itemize}
+% 		
+% 		\onslide<+->
+% 		
+% 		\item We want \structure{minimal models}.
 		
 	\end{itemize}
 	
