@@ -1,5 +1,5 @@
-\documentclass{beamer}
-%\documentclass[trans,draft]{beamer} %TODO remove trans,draft
+%\documentclass{beamer}
+\documentclass[trans,draft]{beamer} %TODO remove trans,draft
 
 
 
@@ -111,14 +111,349 @@
 	% You might wish to add the option [pausesections]
 \end{frame}
 
+% 
+% \begin{frame}{Introduction}
+% 	
+% 	\begin{itemize}
+% 		\item Answer-Set Programming (ASP) is a declarative problem-solving paradigm (similar to SAT)
+% 		\item Declarative debugging is too complex
+% 		\item Stepping is gradual evaluation of the program guided by the user
+% 		\item Theoretical framework developed within MMDASP at TUW, kbs
+% 		\item My thesis bridges the theoretical framework with practical ASP languages
+% 		\item Implementation as plug-in for SeaLion
+% 		\item TODO: formating, pictures, references
+% 	\end{itemize}
+% 	
+% \end{frame}
 
 
-\section{Introduction}
+
+\section{Brief Introduction to ASP}
 
 
-\subsection{Introduction}
+\subsection{Brief Introduction to ASP}
 
-\begin{frame}{Introduction}
+\begin{frame}{Declarative Problem Solving}
+	\onslide<+->
+	
+	\begin{center}
+	\begin{tikzpicture} [
+			every rectangle node/.style={draw,rounded corners,text height=1.5ex,text depth=.25ex,minimum size=7mm},
+			every path/.style={->,>=stealth',thick,rounded corners},
+			node distance=5mm,
+%			anchor=base,
+			transform shape,
+%			scale=0.8,%rotate=10,
+		]
+		
+		\node[coordinate] (1) {};
+		
+		\node[rectangle,draw=maincolor!85!black,top color=white,bottom color=maincolor!85] (solver) [right=30mm of 1] {solver};
+		\node[rectangle,draw=blue!75!black,top color=white,bottom color=blue!75] (instance) [above=2mm of 1] {problem instance};
+		\node[rectangle,draw=blue!75!black,top color=white,bottom color=blue!75] (description) [below=2mm of 1] {declarative description};
+		\node[rectangle,draw=green!65!black,top color=white,bottom color=green!75!black!80] (solutions) [right=of solver] {solutions};
+		
+		\node[coordinate] (2) at ($(description.east)!0.5!(solver.west)$) {};
+		\node[coordinate] (3) at (instance.east -| description.east) {};
+		\node[coordinate] (4) at ($(3)!0.5!(solver.west)$) {};
+% 		
+% 		\fill [red] (2) circle (2pt);
+% 		\fill [red] (3) circle (2pt);
+% 		\fill [red] (4) circle (2pt);
+		
+		\draw (instance) -| (4) |- (solver);
+		\draw (description) -| (2) |- (solver);
+		\draw (solver) -- (solutions);
+		
+	\end{tikzpicture}
+	\end{center}
+	
+	\onslide<+->
+	
+	\begin{example}[encoding 3-coloring to SAT]
+	
+		\begin{itemize}
+			\item Having a graph: \hspace{1.25cm}
+				\begin{tikzpicture} [
+						every circle node/.style={draw,inner sep=0,minimum size=5mm},
+						every path/.style={->,>=stealth',thick},
+						node distance=5mm,
+			%			anchor=base,
+						transform shape,
+			%			scale=0.8,%rotate=10,
+					]
+					
+					\node<2>[circle] (1) {1};
+					\node<2>[circle] (2) [right=of 1] {2};
+					\node<2>[circle] (3) [right=of 2] {3};
+					\node<2>[circle] (4) [right=of 3] {4};
+					\node<5->[circle,fill=red!70] (1) {1};
+					\node<5->[circle,fill=blue!55] (2) [right=of 1] {2};
+					\node<5->[circle,fill=green!90!black] (3) [right=of 2] {3};
+					\node<5->[circle,fill=blue!55] (4) [right=of 3] {4};
+					
+					\draw (1) to [bend left] (3);
+					\draw (2) to (1);
+					\draw (2) to (3);
+					\draw (3) to [bend left] (4);
+					\draw (4) to [bend left] (3);
+					
+				\end{tikzpicture}
+			
+				
+			\onslide<+->
+			
+			\item Instance:
+				{\scriptsize$N = \set{1,2,3,4}$, $E = \set{\tuple{1,3}, \tuple{2,1}, \tuple{2,3}, \tuple{3,4}, \tuple{4,3}}$}
+			
+			\onslide<+->
+			
+			\item Encoding:
+				
+				{\scriptsize
+				$\forall x \in N\ .\ green(x) \vee blue(x) \vee red(x)$\\
+				$\forall x \in N\ .\ \neg(red(x) \wedge blue(x)) \wedge \neg(blue(x) \wedge green(x)) \wedge  \neg(green(x) \wedge red(x))$\\
+				$\forall \tuple{x,y} \in E\ .\ \neg (red(x) \wedge red(y)) \wedge \neg (green(x) \wedge green(y)) \wedge \neg (blue(x) \wedge blue(y))$\\
+				}
+			
+			\onslide<+->
+			
+			\item Solutions: {\scriptsize$I = \set{red(1), blue(2), green(3), blue(4)}$}, \ldots
+			
+		\end{itemize}
+		
+	\end{example}
+	
+	
+\end{frame}
+
+\begin{frame}{How Answer-Set Programming differs from SAT}
+	\onslide<+->
+	
+	ASP is \structure{normal logic programs} under \structure{stable model semantics}.
+	
+	\onslide<+->
+	
+	\begin{definition}[normal logic program]
+		A \structure{\emph{normal logic program}} is a set of rules $r$ of the form:
+		\begin{center}
+			$h \code{ :- } b_1 \code{,} \ldots \code{,}\ b_n \code{,}\ \code{not}\ b_{n+1} \code{,} \ldots \code{,}\ \code{not}\ b_m \code{.}$
+		\end{center}
+		where $\head{r} = \set{h}$ and $\body{r} = \set{b_1, \ldots, \code{not}\ b_m}$.
+	\end{definition}
+	
+	In classical logic that would be
+	\begin{center}
+		$b_1 \wedge \ldots \wedge b_n \wedge \neg b_{n+1} \wedge \ldots \wedge \neg b_m \rightarrow h$
+	\end{center}
+	
+\end{frame}
+
+\begin{frame}{Stable Model Semantics}
+	\onslide<+->
+	
+	\begin{definition}[active rules]
+		\structure{\emph{Active rules}} of a program $P$ under an interpretation $I$ is the set
+		\begin{center}
+			$\activerules{I}{\prog} = \setcomp{r \in \prog}{I \models \body{r}}$
+		\end{center}
+	\end{definition}
+	
+	\begin{definition}[answer set]
+		An interpretation $I$ is an \structure{\emph{answer set}} of a program $\prog$ iff\\
+		$I$ is a minimal model of $\activerules{I}{\prog}$.
+	\end{definition}
+	
+\end{frame}
+
+\begin{frame}{Why minimal models 1/2}
+	\onslide<+->
+	
+	\begin{itemize}
+		\item Having the same graph: \hspace{0.25cm}
+			\begin{tikzpicture} [
+					every circle node/.style={draw,inner sep=0,minimum size=5mm},
+					every path/.style={->,>=stealth',thick},
+					node distance=5mm,
+		%			anchor=base,
+					transform shape,
+		%			scale=0.8,%rotate=10,
+				]
+				
+				\node[circle] (1) {1};
+				\node[circle] (2) [right=of 1] {2};
+				\node[circle] (3) [right=of 2] {3};
+				\node[circle] (4) [right=of 3] {4};
+				
+				\draw (1) to [bend left] (3);
+				\draw (2) to (1);
+				\draw (2) to (3);
+				\draw (3) to [bend left] (4);
+				\draw (4) to [bend left] (3);
+				
+			\end{tikzpicture} \hspace{\fill}
+		
+		\item Encoded by facts: \hfill \code{n(1). n(2). n(3). n(4).}\\
+			\hfill \code{e(1,3). e(2,1). e(2,3). e(3,4). e(4,3).}
+		
+		\onslide<+->
+		
+		\item Program $\prog_{r,4}$ that finds all nodes reachable from $4$:
+		
+			\code{start(4).}\\
+			\code{r(Y) :- start(X), e(X,Y).}\\
+			\code{r(Y) :- r(X), e(X,Y).}
+		
+		\onslide<+->
+		
+		\item We want to get only models $I$, s.t.
+			\begin{center}
+				$\set{r(3), r(4)}\subseteq I\quad$ but $\quad\set{r(1), r(2)}\cap I = \emptyset$
+			\end{center}
+		
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Why minimal models 2/2}
+	\onslide<+->
+	
+	\begin{itemize}
+		\item $\prog_{r,4}$ translated to classical logic
+			\begin{center}
+				$\begin{array}{rcl}
+				start(X) \wedge e(X,Y) & \rightarrow & r(Y) \\
+				r(X) \wedge e(X,Y) & \rightarrow & r(Y)
+				\end{array}$
+			\end{center}
+		
+		\item has also models containing $r(1)$ or $r(2)$.
+		
+		\onslide<+->
+		
+		\item We can add formulas
+			\begin{center}
+				$(\,start(X) \wedge e(X,Y)\,)\ \vee\ (\,r(X) \wedge e(X,Y)\,) \ \leftarrow \ r(Y)$
+			\end{center}
+		
+		\onslide<+->
+		
+		\item but we still get
+			\begin{center}
+				$\begin{array}{rcl}
+				r(2) \wedge e(2,1) & \rightarrow & r(1) \\
+				(\,start(2) \wedge e(2,1)\,)\ \vee\ (\,r(2) \wedge e(2,1)\,) & \leftarrow & r(1)
+				\end{array}$
+			\end{center}
+			that admits models with $r(1)$ and $r(2)$.
+		
+		\onslide<+->
+		
+		\item We want \structure{minimal models}.
+		
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Why only active rules}
+	\onslide<+->
+	
+	\begin{itemize}
+		\item The program $\prog_1$:
+		\begin{center}
+			$\code{p :- not}\ \code{q.}$\\
+			$\code{q :- not}\ \code{p.}$
+		\end{center}
+		has minimal models \set{p}, \set{q}.
+		
+		\item But also the program $\prog_2$:
+		\begin{center}
+			$\code{p :- not}\ \code{q.}$
+		\end{center}
+		has minimal models \set{p}, {\color{red}\set{q}}.
+		
+		\onslide<+->
+		
+		\item Uder stable model semantics we get the following:
+		\begin{itemize}
+			\item $I_1 = \set{p}$, $\activerules{I_1}{\prog_1} = \set{\code{p:-not}\ \code{q.}}$, $I_1\models\activerules{I_1}{\prog_1}$ and $I_1$ is minimal\\
+			\onslide<+->
+			\item $I_2 = \set{p,q}$, $\activerules{I_2}{\prog_1} = \emptyset$, $I_2\models\activerules{I_2}{\prog_1}$ but so does $I_1 \subset I_2$\\
+			\onslide<+->
+			\item $I_3 = \set{q}$, $\activerules{I_3}{\prog_2} = \emptyset$, $I_3\models\activerules{I_3}{\prog_2}$ but so does $\emptyset \subset I_3$
+		\end{itemize}
+		
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Obtaining an Answer Set}
+	\onslide<+->
+	
+	\begin{center}
+	\begin{tikzpicture} [
+			every circle node/.style={draw,inner sep=0,minimum size=5mm},
+			every path/.style={->,>=stealth',thick},
+			node distance=5mm,
+%			anchor=base,
+			transform shape,
+%			scale=0.8,%rotate=10,
+		]
+		
+		\node<1>[circle] (1) {1};
+		\node<1>[circle] (2) [right=of 1] {2};
+		\node<1>[circle] (3) [right=of 2] {3};
+		\node<1>[circle] (4) [right=of 3] {4};
+		\node<2->[circle,fill=red!70] (1) {1};
+		\node<2->[circle,fill=blue!55] (2) [right=of 1] {2};
+		\node<2->[circle,fill=green!90!black] (3) [right=of 2] {3};
+		\node<2->[circle,fill=blue!55] (4) [right=of 3] {4};
+		
+		\draw (1) to [bend left] (3);
+		\draw (2) to (1);
+		\draw (2) to (3);
+		\draw (3) to [bend left] (4);
+		\draw (4) to [bend left] (3);
+		
+	\end{tikzpicture}
+	\end{center}
+	
+	$\code{c(X,red)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,green), not}\ \code{c(X,blue).}$\\
+	$\code{c(X,green)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,red), not}\ \code{c(X,blue).}$\\
+	$\code{c(X,blue)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,red), not}\ \code{c(X,green).}$\\
+	$\code{:- e(X,Y),}\ \code{c(X,C),}\ \code{c(Y,C).}$
+	
+	\onslide<+->
+	
+	\begin{itemize}
+		\item Guess: $I = \set{c(1,red), c(2,blue), c(3,green), c(4,red), \ldots}$
+		
+		\onslide<+->
+		
+		\item Check: $\activerules{I}{\prog} = \{$\\
+			{\footnotesize
+				\newcommand{\hs}{\hspace{0.05\textwidth}}%
+				\hs$\code{c(1,red)}\ \code{:-}\ \code{n(1), not}\ \code{c(1,green), not}\ \code{c(1,blue).}$\\
+				\hs$\code{c(4,red)}\ \code{:-}\ \code{n(4), not}\ \code{c(4,green), not}\ \code{c(4,blue).}$\\
+				\hs$\code{c(3,green)}\ \code{:-}\ \code{n(3), not}\ \code{c(3,red), not}\ \code{c(3,blue).}$\\
+				\hs$\code{c(2,blue)}\ \code{:-}\ \code{n(2), not}\ \code{c(2,red), not}\ \code{c(2,green).}$\\
+			}
+			$\}$
+		
+		\item $I\models\activerules{I}{\prog}$ and $I$ is minimal.
+		
+	\end{itemize}
+	
+\end{frame}
+
+
+
+\section{Stepping}
+
+
+\subsection{Stepping}
+
+\begin{frame}{Introduction}% TODO: Adapt this frame
 	\onslide<+->
 	
 	\begin{columns}[c]
@@ -197,335 +532,6 @@
 	\end{columns}
 	
 \end{frame}
-% 
-% \begin{frame}{Introduction}
-% 	
-% 	\begin{itemize}
-% 		\item Answer-Set Programming (ASP) is a declarative problem-solving paradigm (similar to SAT)
-% 		\item Declarative debugging is too complex
-% 		\item Stepping is gradual evaluation of the program guided by the user
-% 		\item Theoretical framework developed within MMDASP at TUW, kbs
-% 		\item My thesis bridges the theoretical framework with practical ASP languages
-% 		\item Implementation as plug-in for SeaLion
-% 		\item TODO: formating, pictures, references
-% 	\end{itemize}
-% 	
-% \end{frame}
-
-
-
-\section{Preliminaries}
-
-
-\subsection{Brief Introduction to ASP}
-
-\begin{frame}{What is Answer-Set Programming}
-	\onslide<+->
-	
-	\begin{itemize}
-		\item Declarative problem solving:
-		
-		\begin{center}
-		\begin{tikzpicture} [
-				every rectangle node/.style={draw,rounded corners,text height=1.5ex,text depth=.25ex,minimum size=7mm},
-				every path/.style={->,>=stealth',thick,rounded corners},
-				node distance=5mm,
-	%			anchor=base,
-				transform shape,
-	%			scale=0.8,%rotate=10,
-			]
-			
-			\node[coordinate] (1) {};
-			
-			\node[rectangle,draw=maincolor!85!black,top color=white,bottom color=maincolor!85] (solver) [right=30mm of 1] {solver};
-			\node[rectangle,draw=blue!75!black,top color=white,bottom color=blue!75] (instance) [above=2mm of 1] {problem instance};
-			\node[rectangle,draw=blue!75!black,top color=white,bottom color=blue!75] (description) [below=2mm of 1] {declarative description};
-			\node[rectangle,draw=green!65!black,top color=white,bottom color=green!75!black!80] (solutions) [right=of solver] {solutions};
-			
-			\node[coordinate] (2) at ($(description.east)!0.5!(solver.west)$) {};
-			\node[coordinate] (3) at (instance.east -| description.east) {};
-			\node[coordinate] (4) at ($(3)!0.5!(solver.west)$) {};
-	% 		
-	% 		\fill [red] (2) circle (2pt);
-	% 		\fill [red] (3) circle (2pt);
-	% 		\fill [red] (4) circle (2pt);
-			
-			\draw (instance) -| (4) |- (solver);
-			\draw (description) -| (2) |- (solver);
-			\draw (solver) -- (solutions);
-			
-		\end{tikzpicture}
-		\end{center}
-		
-		\onslide<+->
-		
-		\item An \structure{answer-set program} is a set of rules $r$ of the form:
-		\begin{center}
-		$h\ \code{:-}\ b_1 \code{,} \ldots \code{,}\ b_n \code{,}\ \code{not}\ b_{n+1} \code{,} \ldots \code{,}\ \code{not}\ b_m \code{.}$
-		\end{center}
-		\begin{itemize}
-			\item where $h, b_1, \ldots, b_m$ are atoms
-			\item $\head{r} = \set{h}$ is \structure{head}, $\body{r} = \set{b_1, \ldots, \code{not}\ b_m}$ is \structure{body}
-			\item $\pbody{r} = \set{b_1, \ldots, b_n}$ and $\nbody{r} = \set{b_{n+1}, \ldots, b_m}$
-		\end{itemize}
-		
-		\onslide<+->
-		
-		\item Semantics is defined over propositional rules
-		\item Rules with variables are grounded by applying all possible substitutions
-	\end{itemize}
-	
-\end{frame}
-
-\begin{frame}{Example Problem}
-	\onslide<+->
-	
-	\begin{itemize}
-		\item Having a graph: \hspace{1cm}
-			\begin{tikzpicture} [
-					every circle node/.style={draw,inner sep=0,minimum size=5mm},
-					every path/.style={->,>=stealth',thick},
-					node distance=5mm,
-		%			anchor=base,
-					transform shape,
-		%			scale=0.8,%rotate=10,
-				]
-				
-				\node[circle] (1) {1};
-				\node[circle] (2) [right=of 1] {2};
-				\node[circle] (3) [right=of 2] {3};
-				\node[circle] (4) [right=of 3] {4};
-				
-				\draw (1) to [bend left] (3);
-				\draw (2) to (1);
-				\draw (2) to (3);
-				\draw (3) to [bend left] (4);
-				\draw (4) to [bend left] (3);
-				
-			\end{tikzpicture} \hspace{\fill}
-		
-		\item encoded by facts: \hfill \code{n(1). n(2). n(3). n(4).}\\
-			\hfill \code{e(1,3). e(2,1). e(2,3). e(3,4). e(4,3).}
-		
-		\onslide<+->
-		
-		\item Program $\prog_{r,4}$ that finds all nodes reachable from $4$:
-		
-			\code{start(4).}\\
-			\code{r(Y) :- start(X), e(X,Y).}\\
-			\code{r(Y) :- r(X), e(X,Y).}
-		
-		\onslide<+->
-		
-		\item has grounding: %\gr{\prog_{r,4}}:
-			\begin{columns}[t,totalwidth=0.94\textwidth]
-			\column{0.565\textwidth}
-			{\footnotesize
-				\newcommand{\hs}{\hspace{0.125\textwidth}}%
-				\hs\code{r(1) :- start(1), e(1,1).}\\
-				\hs\code{r(1) :- start(2), e(2,1).}\\
-				\hs\code{r(1) :- start(3), e(3,1).}\\
-				\hs\ldots\\
-				\hs\code{r(2) :- start(1), e(1,2).}\\
-				\hs\code{r(2) :- start(2), e(2,2).}\\
-				\hs\ldots\\
-			}
-			\column{0.37\textwidth}
-			{\footnotesize
-				\code{r(1) :- r(1), e(1,1).}\\
-				\code{r(1) :- r(2), e(2,1).}\\
-				\ldots\\
-				\code{r(2) :- r(1), e(1,2).}\\
-				\code{r(2) :- r(2), e(2,2).}\\
-				\ldots\\
-			}
-			\end{columns}
-		
-	\end{itemize}
-	
-\end{frame}
-
-\begin{frame}{Using classical logic (SAT)}
-	\onslide<+->
-	
-	\begin{itemize}
-		\item We want to get only models $I$, s.t.
-			\begin{center}
-				$\set{r(3), r(4)}\subseteq I\quad$ but $\quad\set{r(1), r(2)}\cap I = \emptyset$
-			\end{center}
-		
-		\onslide<+->
-		
-		\item $\prog_{r,4}$ translated to classical logic
-			\begin{center}
-				$\begin{array}{rcl}
-				start(X) \wedge e(X,Y) & \rightarrow & r(Y) \\
-				r(X) \wedge e(X,Y) & \rightarrow & r(Y)
-				\end{array}$
-			\end{center}
-		
-		\item has also models containing $r(1)$ or $r(2)$.
-		
-		\onslide<+->
-		
-		\item We can add formulas
-			\begin{center}
-				$(\,start(X) \wedge e(X,Y)\,)\ \vee\ (\,r(X) \wedge e(X,Y)\,) \ \leftarrow \ r(Y)$
-			\end{center}
-		
-		\onslide<+->
-		
-		\item but we still get
-			\begin{center}
-				$\begin{array}{rcl}
-				r(2) \wedge e(2,1) & \rightarrow & r(1) \\
-				(\,start(2) \wedge e(2,1)\,)\ \vee\ (\,r(2) \wedge e(2,1)\,) & \leftarrow & r(1)
-				\end{array}$
-			\end{center}
-			in the grounding, that admits models with $r(1)$ and $r(2)$.
-		
-		\onslide<+->
-		
-		\item We want \structure{minimal models}.
-		
-	\end{itemize}
-	
-\end{frame}
-
-\begin{frame}{Negation}
-	\onslide<+->
-	
-	\begin{itemize}
-		\item Program $\prog_{nr,4}$ finds all nodes \textbf{not} reachable from $4$:
-			\begin{center}
-				$\prog_{nr,4} \ = \ \prog_{r,4} \cup \set{\ \code{nr(X) :- n(X), not r(X).}\ }$
-			\end{center}
-		
-		\item We want to get only models $I$, s.t.
-			\begin{center}
-				$\set{nr(1), nr(2)}\subseteq I\quad$ but $\quad\set{nr(3), nr(4)}\cap I = \emptyset$
-			\end{center}
-		
-		\item Can be done with stratifying the program.
-		
-		\onslide<+->
-		
-		\item But we wand also unstratifiable programs, like 3-coloring:
-		
-	\end{itemize}
-	
-	\onslide<2->
-	
-	$\code{c(X,red)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,green), not}\ \code{c(X,blue).}$\\
-	$\code{c(X,green)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,red), not}\ \code{c(X,blue).}$\\
-	$\code{c(X,blue)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,red), not}\ \code{c(X,green).}$\\
-	$\code{:- e(X,Y),}\ \code{c(X,C),}\ \code{c(Y,C).}$
-	
-	\hspace{1cm}
-	{\tiny\color{black!50} $e(X,Y) \wedge c(X,C) \wedge c(Y,C) \rightarrow \bot$}
-	
-\end{frame}
-
-\begin{frame}{Semantics}
-	\onslide<+->
-	
-	$\prog_1 = \set{\code{p:-not}\ \code{q.}\ \code{q:-not}\ \code{p.}}$
-	has minimal models \set{p}, \set{q}.
-	
-	But also $\prog_2 = \set{\code{p:-not}\ \code{q.}}$
-	has minimal models \set{p} and {\color{red}\set{q}}.
-	
-	\onslide<+->
-	
-	\begin{definition}[active rules]
-		\structure{\emph{Active rules}} of a program $P$ under an interpretation $I$ is the set
-		\begin{center}
-			$\activerules{I}{\prog} = \setcomp{r \in \prog}{I \models \body{r}}$
-		\end{center}
-	\end{definition}
-	
-	\begin{definition}[answer set]
-		An interpretation $I$ is an \structure{\emph{answer set}} of a program $\prog$ iff\\
-		$I$ is a minimal model of $\activerules{I}{\prog}$.
-	\end{definition}
-	
-	\onslide<+->
-	
-	\begin{example}
-		$I_1 = \set{p}$, $\activerules{I_1}{\prog_1} = \set{\code{p:-not}\ \code{q.}}$, $I_1\models\activerules{I_1}{\prog_1}$ and $I_1$ is minimal\\
-		\onslide<+->
-		$I_2 = \set{p,q}$, $\activerules{I_2}{\prog_1} = \emptyset$, $I_2\models\activerules{I_2}{\prog_1}$ but so does $I_1 \subset I_2$\\
-		\onslide<+->
-		$I_3 = \set{q}$, $\activerules{I_3}{\prog_2} = \emptyset$, $I_3\models\activerules{I_3}{\prog_2}$ but so does $\emptyset \subset I_3$
-	\end{example}
-	
-\end{frame}
-
-\begin{frame}{Obtaining an Answer Set}
-	\onslide<+->
-	
-	\begin{center}
-	\begin{tikzpicture} [
-			every circle node/.style={draw,inner sep=0,minimum size=5mm},
-			every path/.style={->,>=stealth',thick},
-			node distance=5mm,
-%			anchor=base,
-			transform shape,
-%			scale=0.8,%rotate=10,
-		]
-		
-		\node<1>[circle] (1) {1};
-		\node<1>[circle] (2) [right=of 1] {2};
-		\node<1>[circle] (3) [right=of 2] {3};
-		\node<1>[circle] (4) [right=of 3] {4};
-		\node<2->[circle,fill=red!70] (1) {1};
-		\node<2->[circle,fill=blue!55] (2) [right=of 1] {2};
-		\node<2->[circle,fill=green!90!black] (3) [right=of 2] {3};
-		\node<2->[circle,fill=blue!55] (4) [right=of 3] {4};
-		
-		\draw (1) to [bend left] (3);
-		\draw (2) to (1);
-		\draw (2) to (3);
-		\draw (3) to [bend left] (4);
-		\draw (4) to [bend left] (3);
-		
-	\end{tikzpicture}
-	\end{center}
-	
-	$\code{c(X,red)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,green), not}\ \code{c(X,blue).}$\\
-	$\code{c(X,green)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,red), not}\ \code{c(X,blue).}$\\
-	$\code{c(X,blue)}\ \code{:-}\ \code{n(X), not}\ \code{c(X,red), not}\ \code{c(X,green).}$\\
-	$\code{:- e(X,Y),}\ \code{c(X,C),}\ \code{c(Y,C).}$
-	
-	\onslide<+->
-	
-	\begin{itemize}
-		\item Guess: $I = \set{c(1,red), c(2,blue), c(3,green), c(4,red), \ldots}$
-		
-		\onslide<+->
-		
-		\item Check: $\activerules{I}{\prog} = \{$\\
-			{\footnotesize
-				\newcommand{\hs}{\hspace{0.05\textwidth}}%
-				\hs$\code{c(1,red)}\ \code{:-}\ \code{n(1), not}\ \code{c(1,green), not}\ \code{c(1,blue).}$\\
-				\hs$\code{c(4,red)}\ \code{:-}\ \code{n(4), not}\ \code{c(4,green), not}\ \code{c(4,blue).}$\\
-				\hs$\code{c(3,green)}\ \code{:-}\ \code{n(3), not}\ \code{c(3,red), not}\ \code{c(3,blue).}$\\
-				\hs$\code{c(2,blue)}\ \code{:-}\ \code{n(2), not}\ \code{c(2,red), not}\ \code{c(2,green).}$\\
-			}
-			$\}$
-		
-		\item $I\models\activerules{I}{\prog}$ and $I$ is minimal.
-		
-	\end{itemize}
-	
-\end{frame}
-
-
-
-\section{Stepping}
-
-
-\subsection{Stepping}
 
 \begin{frame}{Stepping in a Nutshell}
 	\onslide<+->
