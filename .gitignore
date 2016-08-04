@@ -1,3 +1,10 @@
-.sass-cache
-.sass-cache/
 _site
+.DS_Store
+.jekyll
+.jekyll-metadata
+.bundle
+.sass-cache
+Gemfile
+Gemfile.lock
+node_modules
+package.json

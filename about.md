@@ -1,13 +1,15 @@
 ---
-layout: about
+layout: page
 title: About
-author: Charlie
 permalink: /about/
 ---
 
-Hi! My name is <span class="highlight-span">Charlie</span>!
+Some information about you!
 
-> We think too much and feel too little.
+### More Information
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua.
+A place to include any other types of information that you'd like to include about yourself.
+
+### Contact me
+
+[email@domain.com](mailto:email@domain.com)
